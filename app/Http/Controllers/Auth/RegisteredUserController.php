@@ -53,11 +53,24 @@ class RegisteredUserController extends Controller
         ]);
 
         // 2. Buat profil Student dan relasikan dengan user_id & major_id
-        Student::create([
+        $student = Student::create([
             'user_id' => $user->id,
             'major_id' => $request->major_id,
             'nisn' => $request->nisn,
             'name' => $request->name,
+        ]);
+
+        // 3. GENERATE 2 JURNAL KOSONG (PKL 1 & PKL 2) OTOMATIS
+        \App\Models\Journal::create([
+            'student_id' => $student->id,
+            'phase' => 1, // Jurnal PKL 1
+            'status' => 'DRAFT'
+        ]);
+
+        \App\Models\Journal::create([
+            'student_id' => $student->id,
+            'phase' => 2, // Jurnal PKL 2
+            'status' => 'DRAFT'
         ]);
 
         event(new Registered($user));

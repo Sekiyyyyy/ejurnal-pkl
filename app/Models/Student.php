@@ -21,4 +21,9 @@ class Student extends Model
     {
         return $this->belongsTo(Major::class);
     }
+
+    public function journals()
+    {
+        return $this->hasMany(Journal::class);
+    }
 }

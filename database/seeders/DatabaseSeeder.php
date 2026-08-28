@@ -19,11 +19,8 @@ class DatabaseSeeder extends Seeder
             'name' => 'Teknik Komputer dan Jaringan',
         ]);
 
-        // Buat Data Siswa Dummy (Belum punya akun)
-        \App\Models\Student::create([
-            'major_id' => $major->id,
-            'nisn' => '1234567890',
-            'name' => 'Budi Santoso',
+        $this->call([
+            AssessmentSeeder::class,
         ]);
     }
 }
