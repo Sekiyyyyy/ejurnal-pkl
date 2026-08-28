@@ -12,6 +12,11 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+    // Konstanta Role untuk mempermudah pengecekan
+    public const ROLE_SUPER_ADMIN = 'super_admin';
+    public const ROLE_TEACHER = 'teacher';
+    public const ROLE_STUDENT = 'student';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -21,7 +26,19 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'is_active',
     ];
+
+    public function student()
+    {
+        return $this->hasOne(Student::class);
+    }
+
+    public function teacher()
+    {
+        return $this->hasOne(Teacher::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -43,6 +60,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 }

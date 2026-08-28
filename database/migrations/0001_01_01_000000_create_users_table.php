@@ -17,6 +17,10 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            // Tambahan untuk Role dan Status
+            $table->enum('role', ['super_admin', 'teacher', 'student'])->default('student');
+            $table->boolean('is_active')->default(true);
+            
             $table->rememberToken();
             $table->timestamps();
         });

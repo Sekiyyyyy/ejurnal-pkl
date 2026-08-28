@@ -13,11 +13,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Buat Data Jurusan Dummy
+        $major = \App\Models\Major::create([
+            'code' => 'TKJ',
+            'name' => 'Teknik Komputer dan Jaringan',
+        ]);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Buat Data Siswa Dummy (Belum punya akun)
+        \App\Models\Student::create([
+            'major_id' => $major->id,
+            'nisn' => '1234567890',
+            'name' => 'Budi Santoso',
         ]);
     }
 }
