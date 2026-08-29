@@ -15,9 +15,9 @@ return new class extends Migration
 
             $table->tinyInteger('phase')->comment('1 untuk PKL 1, 2 untuk PKL 2');
             
-            // Nullable karena siswa mungkin akan mengisinya secara bertahap (Save Progress)
-            $table->foreignId('company_id')->nullable()->constrained('companies')->restrictOnDelete();
-            $table->foreignId('teacher_id')->nullable()->constrained('teachers')->restrictOnDelete();
+            $table->string('company_name')->nullable();
+            $table->string('company_address')->nullable();
+            $table->string('teacher_name')->nullable();
             
             // Data Instruktur (Penanggung Jawab PKL)
             $table->string('instructor_name')->nullable();

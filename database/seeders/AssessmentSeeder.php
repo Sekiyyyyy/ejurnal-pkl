@@ -28,23 +28,28 @@ class AssessmentSeeder extends Seeder
         }
 
         // 2. OBSERVASI (Poin Utama + Sub Poin)
-        $obs1 = Assessment::create(['category' => 'observation_point', 'name' => 'Menerapkan soft skills dan budaya kerja', 'order_number' => 1]);
+        $obs1 = Assessment::create(['category' => 'observation_point', 'name' => 'Menerapkan soft skills dan budaya kerja yang dibutuhkan dalam dunia kerja', 'order_number' => 1]);
         Assessment::create(['category' => 'observation_sub', 'parent_id' => $obs1->id, 'name' => 'Menunjukkan integritas dan kedisiplinan', 'order_number' => 1]);
         Assessment::create(['category' => 'observation_sub', 'parent_id' => $obs1->id, 'name' => 'Menunjukkan kemandirian, kreatifitas, dan rasa ingin tahu', 'order_number' => 2]);
         Assessment::create(['category' => 'observation_sub', 'parent_id' => $obs1->id, 'name' => 'Melaksanakan tanggung jawab dan kerja keras', 'order_number' => 3]);
         Assessment::create(['category' => 'observation_sub', 'parent_id' => $obs1->id, 'name' => 'Menunjukkan kepedulian sosial dan lingkungan', 'order_number' => 4]);
-        Assessment::create(['category' => 'observation_sub', 'parent_id' => $obs1->id, 'name' => 'Menunjukkan komunikasi dan kolaboratif dalam bekerjasama', 'order_number' => 5]);
+        Assessment::create(['category' => 'observation_sub', 'parent_id' => $obs1->id, 'name' => 'Menunjukkan komunikasi dan kolaboratif', 'order_number' => 5]);
 
-        $obs2 = Assessment::create(['category' => 'observation_point', 'name' => 'Menerapkan SOP dan K3LH', 'order_number' => 2]);
+        $obs2 = Assessment::create(['category' => 'observation_point', 'name' => 'Menerapkan SOP dan K3LH yang ada di dunia kerja', 'order_number' => 2]);
         Assessment::create(['category' => 'observation_sub', 'parent_id' => $obs2->id, 'name' => 'Menggunakan APD dengan tertib dan benar', 'order_number' => 1]);
         Assessment::create(['category' => 'observation_sub', 'parent_id' => $obs2->id, 'name' => 'Melaksanakan pekerjaan sesuai dengan SOP', 'order_number' => 2]);
         Assessment::create(['category' => 'observation_sub', 'parent_id' => $obs2->id, 'name' => 'Menerapkan K3LH', 'order_number' => 3]);
 
-        $obs3 = Assessment::create(['category' => 'observation_point', 'name' => 'Menerapkan kompetensi teknis', 'order_number' => 3]);
-        // 5 Slot kosong (Custom) untuk observasi kompetensi teknis
+        $obs3 = Assessment::create(['category' => 'observation_point', 'name' => 'Menerapkan kompetensi teknis yang sudah dipelajari', 'order_number' => 3]);
+        // 5 Slot kosong untuk diisi teks manual nantinya
         for ($i=1; $i<=5; $i++) {
             Assessment::create(['category' => 'observation_sub', 'parent_id' => $obs3->id, 'name' => 'Slot Teknis '.$i, 'order_number' => $i]);
         }
+
+        // TAMBAHAN: POIN 4 OBSERVASI
+        $obs4 = Assessment::create(['category' => 'observation_point', 'name' => 'Memahami alur bisnis dunia kerja tempat PKL dan wawasan wirausaha', 'order_number' => 4]);
+        Assessment::create(['category' => 'observation_sub', 'parent_id' => $obs4->id, 'name' => 'Mengidentifikasi kegiatan bisnis atau usaha di dunia kerja', 'order_number' => 1]);
+        Assessment::create(['category' => 'observation_sub', 'parent_id' => $obs4->id, 'name' => 'Menjelaskan alur bisnis atau usaha yang akan dilaksakan', 'order_number' => 2]);
 
         // 3. PENILAIAN TEKNIS (4 Poin)
         Assessment::create(['category' => 'grade_technical', 'name' => 'Menerapkan soft skills dan budaya kerja', 'order_number' => 1]);

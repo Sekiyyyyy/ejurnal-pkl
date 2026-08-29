@@ -28,18 +28,22 @@ Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
     // Kegiatan Harian PKL
     Route::get('/jurnal/{id}/kegiatan', [App\Http\Controllers\DailyActivityController::class, 'index'])->name('journal.activity');
     Route::post('/jurnal/{id}/kegiatan', [App\Http\Controllers\DailyActivityController::class, 'store'])->name('journal.store-activity');
-});
+    Route::put('/jurnal/{id}/kegiatan/{activityId}/approve', [App\Http\Controllers\DailyActivityController::class, 'approve'])->name('journal.approve-activity');
 
-// ROUTE KHUSUS GURU PEMBIMBING
-Route::middleware(['auth', 'verified', 'role:teacher'])->group(function () {
-    
-    Route::get('/guru/dashboard', [TeacherController::class, 'dashboard'])->name('teacher.dashboard');
-    Route::get('/guru/jurnal/{id}', [TeacherController::class, 'showJournal'])->name('teacher.journal.show');
-    
-    // Monitoring
-    Route::get('/guru/jurnal/{id}/monitoring', [TeacherController::class, 'editMonitoring'])->name('teacher.monitoring');
-    Route::put('/guru/jurnal/{id}/monitoring', [TeacherController::class, 'updateMonitoring'])->name('teacher.update-monitoring');
-    
+    // Tanda Tangan & Paraf
+    Route::get('/jurnal/{id}/tanda-tangan', [JournalController::class, 'editSignatures'])->name('journal.signatures');
+    Route::post('/jurnal/{id}/tanda-tangan', [JournalController::class, 'updateSignatures'])->name('journal.update-signatures');
+
+    // Penilaian Instruktur (DUDI)
+    Route::get('/jurnal/{id}/penilaian-instruktur', [App\Http\Controllers\InstructorAssessmentController::class, 'edit'])->name('journal.instructor-assessment');
+    Route::post('/jurnal/{id}/penilaian-instruktur', [App\Http\Controllers\InstructorAssessmentController::class, 'update'])->name('journal.update-instructor-assessment');
+
+    // Export Word
+    Route::get('/jurnal/{id}/export', [App\Http\Controllers\ExportController::class, 'exportDocx'])->name('journal.export');
+
+    // Monitoring Guru (Diisi dari akun siswa)
+    Route::get('/jurnal/{id}/monitoring', [JournalController::class, 'editMonitoring'])->name('journal.monitoring');
+    Route::put('/jurnal/{id}/monitoring', [JournalController::class, 'updateMonitoring'])->name('journal.update-monitoring');
 });
 
 // Route Profil Bawaan Breeze

@@ -28,7 +28,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('journal.store-attendance', $journal->id) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('journal.store-attendance', $journal->id) }}" method="POST">
                         @csrf
                         
                         <div class="mb-3">
@@ -61,12 +61,6 @@
                         <div class="mb-4">
                             <x-input-label for="notes" value="Keterangan (Opsional)" />
                             <x-text-input id="notes" class="block mt-1 w-full" type="text" name="notes" placeholder="Misal: Surat dokter ada di lampiran" />
-                        </div>
-
-                        <!-- INPUT BUKTI / EVIDENCE -->
-                        <div id="evidence-input" class="mb-4" style="display: none;">
-                            <x-input-label for="evidence" value="Upload Bukti / Surat Dokter (Opsional, JPG/PDF Maks 2MB)" />
-                            <input type="file" id="evidence" name="evidence" class="block mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" accept=".jpg,.jpeg,.png,.pdf">
                         </div>
 
                         <x-primary-button class="w-full justify-center">
@@ -106,14 +100,6 @@
                                     </td>
                                     <td class="px-4 py-3">
                                         {{ $att->notes ?? '-' }}
-                                        @if($att->evidence_path)
-                                            <div class="mt-1">
-                                                <a href="{{ asset('storage/' . $att->evidence_path) }}" target="_blank" class="text-xs text-blue-600 hover:underline flex items-center">
-                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
-                                                    Lihat Bukti
-                                                </a>
-                                            </div>
-                                        @endif
                                     </td>
                                 </tr>
                                 @empty
@@ -134,7 +120,6 @@
         function toggleTimeInputs() {
             const status = document.getElementById('status').value;
             const timeInputs = document.getElementById('time-inputs');
-            const evidenceInput = document.getElementById('evidence-input');
             
             // Logika Jam Masuk/Pulang
             if (status === 'Hadir') {
@@ -143,14 +128,6 @@
                 timeInputs.style.display = 'none';
                 document.getElementById('entry_time').value = '';
                 document.getElementById('exit_time').value = '';
-            }
-
-            // Logika Upload Bukti
-            if (status === 'Sakit' || status === 'Izin') {
-                evidenceInput.style.display = 'block';
-            } else {
-                evidenceInput.style.display = 'none';
-                document.getElementById('evidence').value = '';
             }
         }
         

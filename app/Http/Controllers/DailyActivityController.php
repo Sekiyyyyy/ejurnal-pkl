@@ -30,7 +30,7 @@ class DailyActivityController extends Controller
                           ->where('student_id', Auth::user()->student->id)
                           ->firstOrFail();
 
-        // Validasi, pastikan kegiatan tidak diisi untuk hari esok
+        // 1. Validasi Input Dasar
         $request->validate([
             'date' => 'required|date|before_or_equal:today',
             'division' => 'nullable|string|max:255',
@@ -43,6 +43,25 @@ class DailyActivityController extends Controller
             'end_time.after' => 'Jam selesai harus lebih besar dari jam mulai.'
         ]);
 
+        // Pastikan tanggal PKL sudah diisi
+        if (!$journal->start_date || !$journal->end_date) {
+            return back()->withErrors(['date' => 'Harap isi Tanggal Mulai dan Selesai PKL di menu Data PKL terlebih dahulu.'])->withInput();
+        }
+
+        // Validasi Tanggal (Maksimal hari ini, dan harus berada di dalam periode PKL)
+        $request->validate([
+            'date' => [
+                'required', 'date', 'before_or_equal:today',
+                'after_or_equal:' . $journal->start_date->format('Y-m-d'),
+                'before_or_equal:' . $journal->end_date->format('Y-m-d')
+            ],
+            // ... (Biarkan validasi lain di bawahnya tetap utuh, misal status/entry_time/activity/dll)
+        ], [
+            'date.after_or_equal' => 'Tanggal tidak valid. Kegiatan/Absensi tidak boleh sebelum periode PKL dimulai (' . $journal->start_date->format('d M Y') . ').',
+            'date.before_or_equal' => 'Tanggal tidak valid. Maksimal adalah hari ini dan tidak melebihi akhir PKL.',
+        ]);
+
+        // 3. Simpan Data Jika Validasi Lolos
         $journal->dailyActivities()->create([
             'date' => $request->date,
             'division' => $request->division,
@@ -53,5 +72,28 @@ class DailyActivityController extends Controller
         ]);
 
         return back()->with('success', 'Kegiatan harian berhasil ditambahkan.');
+    }
+
+    // Instruktur melakukan persetujuan melalui perangkat/akun siswa
+    public function approve(Request $request, $journalId, $activityId)
+    {
+        $journal = Journal::where('id', $journalId)
+                          ->where('student_id', Auth::user()->student->id)
+                          ->firstOrFail();
+
+        $activity = DailyActivity::where('id', $activityId)
+                                 ->where('journal_id', $journal->id)
+                                 ->firstOrFail();
+
+        $request->validate([
+            'instructor_notes' => 'nullable|string|max:255'
+        ]);
+
+        $activity->update([
+            'is_approved' => true,
+            'instructor_notes' => $request->instructor_notes
+        ]);
+
+        return back()->with('success', 'Kegiatan berhasil divalidasi oleh Instruktur.');
     }
 }

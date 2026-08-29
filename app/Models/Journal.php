@@ -7,17 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class Journal extends Model
 {
     protected $fillable = [
-        'student_id',
-        'phase',
-        'company_id',
-        'teacher_id',
-        'instructor_name',
-        'instructor_position',
-        'instructor_email',
-        'instructor_phone',
-        'start_date',
-        'end_date',
-        'status',
+        'student_id', 'phase', 'status',
+        'company_name', 'company_address', // Baru
+        'teacher_name', // Baru
+        'instructor_name', 'instructor_position', 'instructor_email', 'instructor_phone',
+        'start_date', 'end_date',
+        'student_signature', 'parent_signature', 'instructor_signature', 'instructor_paraf',
     ];
 
     protected function casts(): array
@@ -32,18 +27,6 @@ class Journal extends Model
     public function student()
     {
         return $this->belongsTo(Student::class);
-    }
-
-    // Relasi ke Tempat PKL
-    public function company()
-    {
-        return $this->belongsTo(Company::class);
-    }
-
-    // Relasi ke Guru Pembimbing
-    public function teacher()
-    {
-        return $this->belongsTo(Teacher::class);
     }
 
     public function attendances()

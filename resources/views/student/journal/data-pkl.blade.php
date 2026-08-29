@@ -15,30 +15,20 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         
-                        <!-- Tempat PKL -->
+                        <!-- Tempat PKL & Alamat -->
                         <div>
-                            <x-input-label for="company_id" value="Tempat PKL" />
-                            <select name="company_id" id="company_id" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm">
-                                <option value="">-- Pilih Tempat PKL --</option>
-                                @foreach($companies as $company)
-                                    <option value="{{ $company->id }}" {{ old('company_id', $journal->company_id) == $company->id ? 'selected' : '' }}>
-                                        {{ $company->name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <x-input-label for="company_name" value="Nama Tempat PKL" />
+                            <x-text-input id="company_name" class="block mt-1 w-full" type="text" name="company_name" :value="old('company_name', $journal->company_name)" required />
+                        </div>
+                        <div>
+                            <x-input-label for="company_address" value="Alamat Tempat PKL" />
+                            <x-text-input id="company_address" class="block mt-1 w-full" type="text" name="company_address" :value="old('company_address', $journal->company_address)" required />
                         </div>
 
                         <!-- Guru Pembimbing -->
                         <div>
-                            <x-input-label for="teacher_id" value="Guru Pembimbing" />
-                            <select name="teacher_id" id="teacher_id" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm">
-                                <option value="">-- Pilih Guru Pembimbing --</option>
-                                @foreach($teachers as $teacher)
-                                    <option value="{{ $teacher->id }}" {{ old('teacher_id', $journal->teacher_id) == $teacher->id ? 'selected' : '' }}>
-                                        {{ $teacher->name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <x-input-label for="teacher_name" value="Nama Guru Pembimbing (Beserta Gelar)" />
+                            <x-text-input id="teacher_name" class="block mt-1 w-full" type="text" name="teacher_name" :value="old('teacher_name', $journal->teacher_name)" placeholder="Misal: Budi Guru, S.Kom" required />
                         </div>
 
                         <!-- Data Instruktur -->
