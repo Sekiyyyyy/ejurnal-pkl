@@ -38,17 +38,25 @@ class InstructorAssessmentController extends Controller
                           ->where('student_id', Auth::user()->student->id)
                           ->firstOrFail();
 
-        // Menyimpan Observasi (Sub poin Ya/Tidak)
-        if ($request->has('obs_yes')) {
-            foreach ($request->obs_yes as $assessmentId => $value) {
+        // 1. Menyimpan Observasi (Sub poin Ya/Tidak & Teks Khusus Poin 3)
+        $allObsKeys = array_unique(array_merge(
+            array_keys($request->obs_yes ?? []),
+            array_keys($request->obs_custom_name ?? [])
+        ));
+
+        foreach ($allObsKeys as $assessmentId) {
+            $isYes = $request->obs_yes[$assessmentId] ?? null;
+            $description = $request->obs_custom_name[$assessmentId] ?? null;
+
+            if ($isYes !== null || $description !== null) {
                 JournalAssessment::updateOrCreate(
                     ['journal_id' => $journal->id, 'assessment_id' => $assessmentId],
-                    ['is_yes' => $value]
+                    ['is_yes' => $isYes, 'description' => $description]
                 );
             }
         }
 
-        // Menyimpan Deskripsi Observasi (Diikat di Poin Utama)
+        // 2. Menyimpan Deskripsi Observasi (Diikat di Poin Utama)
         if ($request->has('obs_desc')) {
             foreach ($request->obs_desc as $assessmentId => $desc) {
                 JournalAssessment::updateOrCreate(
@@ -58,7 +66,7 @@ class InstructorAssessmentController extends Controller
             }
         }
 
-        // Menyimpan Nilai Angka (Teknis Tetap & Non-Teknis)
+        // 3. Menyimpan Nilai Angka (Teknis Tetap & Non-Teknis)
         if ($request->has('grade')) {
             foreach ($request->grade as $assessmentId => $score) {
                 JournalAssessment::updateOrCreate(
@@ -68,15 +76,20 @@ class InstructorAssessmentController extends Controller
             }
         }
 
-        // Menyimpan Nilai Teknis Custom (Nama Kompetensi & Nilai)
-        if ($request->has('custom_grade')) {
-            foreach ($request->custom_grade as $assessmentId => $score) {
-                // Ambil deskripsi (nama kompetensi) dari input form
-                $name = $request->custom_name[$assessmentId] ?? null;
-                
+        // 4. Menyimpan Nilai Teknis Custom (Nama Kompetensi & Nilai)
+        $allCustomKeys = array_unique(array_merge(
+            array_keys($request->custom_grade ?? []),
+            array_keys($request->custom_name ?? [])
+        ));
+
+        foreach ($allCustomKeys as $assessmentId) {
+            $score = $request->custom_grade[$assessmentId] ?? null;
+            $description = $request->custom_name[$assessmentId] ?? null;
+
+            if ($score !== null || $description !== null) {
                 JournalAssessment::updateOrCreate(
                     ['journal_id' => $journal->id, 'assessment_id' => $assessmentId],
-                    ['score' => $score, 'description' => $name]
+                    ['score' => $score, 'description' => $description]
                 );
             }
         }

@@ -44,6 +44,10 @@ Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
     // Monitoring Guru (Diisi dari akun siswa)
     Route::get('/jurnal/{id}/monitoring', [JournalController::class, 'editMonitoring'])->name('journal.monitoring');
     Route::put('/jurnal/{id}/monitoring', [JournalController::class, 'updateMonitoring'])->name('journal.update-monitoring');
+
+    // Biodata Siswa
+    Route::get('/biodata', [App\Http\Controllers\StudentProfileController::class, 'edit'])->name('student.profile.edit');
+    Route::put('/biodata', [App\Http\Controllers\StudentProfileController::class, 'update'])->name('student.profile.update');
 });
 
 // Route Profil Bawaan Breeze

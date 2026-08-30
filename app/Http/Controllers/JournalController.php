@@ -24,10 +24,11 @@ class JournalController extends Controller
     {
         $student = Auth::user()->student;
 
+        // Perhatikan tambahan 'assessments.assessment' di bawah ini
         $journal = Journal::where('id', $id)
-                          ->where('student_id', $student->id)
-                          ->with(['dailyActivities', 'attendances', 'assessments'])
-                          ->firstOrFail();
+                            ->where('student_id', $student->id)
+                            ->with(['dailyActivities', 'attendances', 'assessments.assessment'])
+                            ->firstOrFail();
 
         if ($journal->phase == 2) {
             $journalFase1 = Journal::where('student_id', $student->id)->where('phase', 1)->first();
@@ -37,20 +38,50 @@ class JournalController extends Controller
             }
         }
 
-        // --- LOGIKA PROGRESS TRACKER ---
-        $progress = 0;
-        // 1. Data PKL (20%)
-        if ($journal->company_id && $journal->start_date) $progress += 20;
-        // 2. Kehadiran Minimal 1 (20%)
-        if ($journal->attendances->count() > 0) $progress += 20;
-        // 3. Kegiatan Harian Minimal 1 (20%)
-        if ($journal->dailyActivities->count() > 0) $progress += 20;
-        // 4. Penilaian Instruktur (20%)
-        if ($journal->assessments->count() > 0) $progress += 20;
-        // 5. Tanda Tangan Lengkap (20%)
-        if ($journal->student_signature && $journal->instructor_signature && $journal->instructor_paraf) $progress += 20;
+        // --- CEK STATUS MASING-MASING FITUR ---
+        // --- CEK STATUS MASING-MASING FITUR ---
+        
+        // Pengecekan ketat: Semua data form PKL harus terisi tidak boleh ada yang null/kosong
+        $isDataPklFilled = $journal->company_name && 
+                            $journal->company_address &&
+                            $journal->start_date && 
+                            $journal->end_date &&
+                            $journal->instructor_name &&
+                            $journal->instructor_position &&
+                            $journal->instructor_phone &&
+                            $journal->instructor_address &&
+                            $journal->teacher_name &&
+                            $journal->teacher_phone &&
+                            $journal->teacher_address;
+        $isKehadiranFilled = $journal->attendances->count() > 0;
+        $isKegiatanFilled = $journal->dailyActivities->count() > 0;
+        
+        // Cek spesifik berdasarkan kategori tabel master
+        $isMonitoringFilled = $journal->assessments->where('assessment.category', 'monitoring')->count() > 0;
+        $isPenilaianFilled = $journal->assessments->whereIn('assessment.category', ['grade_technical', 'grade_non_technical'])->count() > 0;
+        
+        // HARUS ADA 6 GAMBAR INI AGAR TANDA TANGAN VALID
+        $isTtdFilled = $journal->student_signature 
+                    && $journal->parent_signature 
+                    && $journal->instructor_signature 
+                    && $journal->instructor_paraf
+                    && $journal->teacher_signature
+                    && $journal->kaprog_signature;
 
-        return view('student.journal.show', compact('journal', 'progress'));
+        // --- HITUNG PROGRESS (Total 100%) ---
+        $progress = 0;
+        if ($isDataPklFilled) $progress += 20;
+        if ($isKehadiranFilled) $progress += 10;
+        if ($isKegiatanFilled) $progress += 10;
+        if ($isMonitoringFilled) $progress += 20;
+        if ($isPenilaianFilled) $progress += 20;
+        if ($isTtdFilled) $progress += 20;
+
+        return view('student.journal.show', compact(
+            'journal', 'progress', 
+            'isDataPklFilled', 'isKehadiranFilled', 'isKegiatanFilled', 
+            'isMonitoringFilled', 'isPenilaianFilled', 'isTtdFilled'
+        ));
     }
 
     // --- FORM DATA PKL ---
@@ -68,8 +99,11 @@ class JournalController extends Controller
             'company_name' => 'required|string|max:255',
             'company_address' => 'required|string|max:255',
             'teacher_name' => 'required|string|max:255',
+            'teacher_address' => 'required|string', // Baru
+            'teacher_phone' => 'required|string|max:20', // Baru
             'instructor_name' => 'required|string|max:255',
             'instructor_position' => 'required|string|max:255',
+            'instructor_address' => 'required|string', // Baru
             'instructor_phone' => 'required|string|max:20',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
@@ -130,6 +164,8 @@ class JournalController extends Controller
             'parent_signature' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
             'instructor_signature' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
             'instructor_paraf' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
+            'teacher_signature' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
+            'kaprog_signature' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
         ], [
             'max' => 'Ukuran gambar maksimal adalah 1 MB.',
             'image' => 'File harus berupa gambar (JPG/PNG).'
@@ -138,18 +174,12 @@ class JournalController extends Controller
         $data = [];
         
         // Simpan file jika ada yang diupload
-        if ($request->hasFile('student_signature')) {
-            $data['student_signature'] = $request->file('student_signature')->store('signatures', 'public');
-        }
-        if ($request->hasFile('parent_signature')) {
-            $data['parent_signature'] = $request->file('parent_signature')->store('signatures', 'public');
-        }
-        if ($request->hasFile('instructor_signature')) {
-            $data['instructor_signature'] = $request->file('instructor_signature')->store('signatures', 'public');
-        }
-        if ($request->hasFile('instructor_paraf')) {
-            $data['instructor_paraf'] = $request->file('instructor_paraf')->store('signatures', 'public');
-        }
+        if ($request->hasFile('student_signature')) $data['student_signature'] = $request->file('student_signature')->store('signatures', 'public');
+        if ($request->hasFile('parent_signature')) $data['parent_signature'] = $request->file('parent_signature')->store('signatures', 'public');
+        if ($request->hasFile('instructor_signature')) $data['instructor_signature'] = $request->file('instructor_signature')->store('signatures', 'public');
+        if ($request->hasFile('instructor_paraf')) $data['instructor_paraf'] = $request->file('instructor_paraf')->store('signatures', 'public');
+        if ($request->hasFile('teacher_signature')) $data['teacher_signature'] = $request->file('teacher_signature')->store('signatures', 'public');
+        if ($request->hasFile('kaprog_signature')) $data['kaprog_signature'] = $request->file('kaprog_signature')->store('signatures', 'public');
 
         if(!empty($data)) {
             $journal->update($data);

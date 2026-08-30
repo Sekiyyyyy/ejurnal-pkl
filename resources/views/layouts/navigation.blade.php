@@ -15,6 +15,12 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <!-- Tambahan Menu Biodata -->
+                    @if(Auth::user()->role === 'student')
+                    <x-nav-link :href="route('student.profile.edit')" :active="request()->routeIs('student.profile.*')">
+                        {{ __('Biodata PKL') }}
+                    </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -70,6 +76,12 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <!-- Tambahan Menu Biodata -->
+            @if(Auth::user()->role === 'student')
+            <x-nav-link :href="route('student.profile.edit')" :active="request()->routeIs('student.profile.*')">
+                {{ __('Biodata PKL') }}
+            </x-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

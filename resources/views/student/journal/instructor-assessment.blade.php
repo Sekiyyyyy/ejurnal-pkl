@@ -40,23 +40,23 @@
                                         <tr>
                                             <td class="p-2 text-gray-700">
                                                 @if($point->order_number == 3)
-                                                    <!-- Input teks dinamis untuk Poin 3 -->
+                                                    <!-- Input teks dinamis untuk Poin 3 (Diperbarui) -->
                                                     <input type="text" name="obs_custom_name[{{ $child->id }}]" 
-                                                            value="{{ optional($existing[$child->id] ?? null)->description }}" 
-                                                            placeholder="Isi nama kompetensi teknis..." 
-                                                            class="w-full text-sm border-gray-300 rounded">
+                                                        value="{{ old('obs_custom_name.'.$child->id, optional($existing[$child->id] ?? null)->description) }}" 
+                                                        placeholder="Isi nama kompetensi teknis..." 
+                                                        class="w-full text-sm border-gray-300 rounded">
                                                 @else
                                                     {{ $child->name }}
                                                 @endif
                                             </td>
                                             <td class="p-2 text-center">
                                                 <input type="radio" name="obs_yes[{{ $child->id }}]" value="1" 
-                                                    {{ optional($existing[$child->id] ?? null)->is_yes == '1' ? 'checked' : '' }} 
+                                                    {{ old('obs_yes.'.$child->id, optional($existing[$child->id] ?? null)->is_yes) == '1' ? 'checked' : '' }} 
                                                     class="text-indigo-600" {{ $point->order_number == 3 ? '' : 'required' }}>
                                             </td>
                                             <td class="p-2 text-center">
                                                 <input type="radio" name="obs_yes[{{ $child->id }}]" value="0" 
-                                                    {{ optional($existing[$child->id] ?? null)->is_yes == '0' ? 'checked' : '' }} 
+                                                    {{ old('obs_yes.'.$child->id, optional($existing[$child->id] ?? null)->is_yes) == '0' ? 'checked' : '' }} 
                                                     class="text-indigo-600" {{ $point->order_number == 3 ? '' : 'required' }}>
                                             </td>
                                         </tr>

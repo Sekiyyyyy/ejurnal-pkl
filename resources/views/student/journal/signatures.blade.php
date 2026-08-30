@@ -20,7 +20,8 @@
                 @endif
 
                 <div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
-                    <strong>Informasi:</strong> Format file harus berupa gambar <strong>(JPG/PNG)</strong>. Ukuran maksimal untuk setiap gambar adalah <strong>1 MB</strong>.
+                    <strong>Pemberitahuan Penting:</strong> Format file harus berupa gambar <strong>(JPG/PNG)</strong> maksimal 1 MB. <br>
+                    <span class="text-red-600 font-semibold">Seluruh gambar Paraf dan Tanda Tangan WAJIB tanpa latar belakang (transparan).</span>
                 </div>
 
                 <form action="{{ route('journal.update-signatures', $journal->id) }}" method="POST" enctype="multipart/form-data">
@@ -62,6 +63,24 @@
                                 <img src="{{ asset('storage/' . $journal->parent_signature) }}" alt="Ttd Ortu" class="h-20 object-contain mb-3 bg-white border p-1 rounded">
                             @endif
                             <input type="file" name="parent_signature" class="text-xs w-full" accept=".jpg,.jpeg,.png">
+                        </div>
+
+                        <!-- Tanda Tangan Guru Pembimbing -->
+                        <div class="border rounded-lg p-4 bg-gray-50">
+                            <h4 class="font-bold text-gray-700 mb-2">Tanda Tangan Guru Pembimbing</h4>
+                            @if($journal->teacher_signature)
+                                <img src="{{ asset('storage/' . $journal->teacher_signature) }}" alt="Ttd Guru" class="h-20 object-contain mb-3 bg-white border p-1 rounded">
+                            @endif
+                            <input type="file" name="teacher_signature" class="text-xs w-full" accept=".jpg,.jpeg,.png">
+                        </div>
+
+                        <!-- Tanda Tangan Kepala Program (Kaprog) -->
+                        <div class="border rounded-lg p-4 bg-gray-50">
+                            <h4 class="font-bold text-gray-700 mb-2">Tanda Tangan Kaprog Keahlian</h4>
+                            @if($journal->kaprog_signature)
+                                <img src="{{ asset('storage/' . $journal->kaprog_signature) }}" alt="Ttd Kaprog" class="h-20 object-contain mb-3 bg-white border p-1 rounded">
+                            @endif
+                            <input type="file" name="kaprog_signature" class="text-xs w-full" accept=".jpg,.jpeg,.png">
                         </div>
 
                     </div>

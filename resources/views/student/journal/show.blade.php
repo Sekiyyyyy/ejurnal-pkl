@@ -44,57 +44,56 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 
                 <!-- Card Data PKL -->
-                <a href="{{ route('journal.data-pkl', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 border-indigo-500">
+                <a href="{{ route('journal.data-pkl', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 {{ $isDataPklFilled ? 'border-green-500' : 'border-indigo-500' }}">
                     <h3 class="text-lg font-bold text-gray-900">Data PKL</h3>
                     <p class="text-sm text-gray-500 mt-1">Tempat PKL, Instruktur, Pembimbing</p>
-                    <!-- PERBAIKAN DI SINI -->
-                    <div class="mt-3 text-sm {{ $journal->company_name ? 'text-green-600' : 'text-orange-500' }}">
-                        {{ $journal->company_name ? '✓ Sudah diisi (Klik untuk Edit)' : '⚠ Belum lengkap' }}
+                    <div class="mt-3 text-sm font-semibold {{ $isDataPklFilled ? 'text-green-600' : 'text-orange-500' }}">
+                        {{ $isDataPklFilled ? '✓ Sudah lengkap' : '⚠ Belum lengkap' }}
                     </div>
                 </a>
 
-                <!-- Card Kehadiran (AKTIF) -->
-                <a href="{{ route('journal.attendance', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 border-blue-500">
+                <!-- Card Kehadiran -->
+                <a href="{{ route('journal.attendance', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 {{ $isKehadiranFilled ? 'border-green-500' : 'border-blue-500' }}">
                     <h3 class="text-lg font-bold text-gray-900">Kehadiran</h3>
                     <p class="text-sm text-gray-500 mt-1">Isi absen harian (Hadir, Izin, Sakit)</p>
-                    <div class="mt-3 text-sm text-blue-600">
-                        Total Absen: {{ $journal->attendances()->count() }} Hari
+                    <div class="mt-3 text-sm font-semibold {{ $isKehadiranFilled ? 'text-green-600' : 'text-blue-600' }}">
+                        {{ $isKehadiranFilled ? '✓ '.$journal->attendances()->count().' Hari Tercatat' : '⚠ Belum ada absen' }}
                     </div>
                 </a>
 
-                <!-- Card Kegiatan Harian (AKTIF) -->
-                <a href="{{ route('journal.activity', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 border-emerald-500">
+                <!-- Card Kegiatan Harian -->
+                <a href="{{ route('journal.activity', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 {{ $isKegiatanFilled ? 'border-green-500' : 'border-emerald-500' }}">
                     <h3 class="text-lg font-bold text-gray-900">Kegiatan Harian</h3>
-                    <p class="text-sm text-gray-500 mt-1">Catat aktivitas dan pekerjaan harian</p>
-                    <div class="mt-3 text-sm text-emerald-600">
-                        Total: {{ $journal->dailyActivities()->count() }} Kegiatan
+                    <p class="text-sm text-gray-500 mt-1">Catat aktivitas harian dan paraf</p>
+                    <div class="mt-3 text-sm font-semibold {{ $isKegiatanFilled ? 'text-green-600' : 'text-emerald-600' }}">
+                        {{ $isKegiatanFilled ? '✓ '.$journal->dailyActivities()->count().' Kegiatan Tercatat' : '⚠ Belum ada logbook' }}
                     </div>
                 </a>
 
                 <!-- Card Tanda Tangan -->
-                <a href="{{ route('journal.signatures', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 border-purple-500">
+                <a href="{{ route('journal.signatures', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 {{ $isTtdFilled ? 'border-green-500' : 'border-purple-500' }}">
                     <h3 class="text-lg font-bold text-gray-900">Tanda Tangan</h3>
                     <p class="text-sm text-gray-500 mt-1">Upload paraf dan tanda tangan</p>
-                    <div class="mt-3 text-sm text-purple-600">
-                        Klik untuk melengkapi gambar
+                    <div class="mt-3 text-sm font-semibold {{ $isTtdFilled ? 'text-green-600' : 'text-red-500' }}">
+                        {{ $isTtdFilled ? '✓ Tanda tangan lengkap' : '⚠ Masih ada gambar yang kosong' }}
                     </div>
                 </a>
 
                 <!-- Card Penilaian Instruktur -->
-                <a href="{{ route('journal.instructor-assessment', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 border-rose-500">
+                <a href="{{ route('journal.instructor-assessment', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 {{ $isPenilaianFilled ? 'border-green-500' : 'border-rose-500' }}">
                     <h3 class="text-lg font-bold text-gray-900">Penilaian Instruktur</h3>
                     <p class="text-sm text-gray-500 mt-1">Lembar observasi dan nilai akhir</p>
-                    <div class="mt-3 text-sm text-rose-600 font-semibold">
-                        Serahkan ke Instruktur untuk diisi
+                    <div class="mt-3 text-sm font-semibold {{ $isPenilaianFilled ? 'text-green-600' : 'text-rose-600' }}">
+                        {{ $isPenilaianFilled ? '✓ Sudah dinilai' : '⚠ Belum diisi Instruktur' }}
                     </div>
                 </a>
 
                 <!-- Card Monitoring Guru -->
-                <a href="{{ route('journal.monitoring', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 border-yellow-500">
+                <a href="{{ route('journal.monitoring', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 {{ $isMonitoringFilled ? 'border-green-500' : 'border-yellow-500' }}">
                     <h3 class="text-lg font-bold text-gray-900">Monitoring Guru</h3>
                     <p class="text-sm text-gray-500 mt-1">Checklist evaluasi bimbingan</p>
-                    <div class="mt-3 text-sm text-yellow-600 font-semibold">
-                        Serahkan ke Guru untuk diisi
+                    <div class="mt-3 text-sm font-semibold {{ $isMonitoringFilled ? 'text-green-600' : 'text-yellow-600' }}">
+                        {{ $isMonitoringFilled ? '✓ Sudah dimonitoring' : '⚠ Belum diisi Guru' }}
                     </div>
                 </a>
 
