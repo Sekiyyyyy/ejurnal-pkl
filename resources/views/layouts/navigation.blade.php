@@ -12,15 +12,33 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    
+                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard') || request()->routeIs('admin.dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <!-- Tambahan Menu Biodata -->
-                    @if(Auth::user()->role === 'student')
-                    <x-nav-link :href="route('student.profile.edit')" :active="request()->routeIs('student.profile.*')">
-                        {{ __('Biodata PKL') }}
-                    </x-nav-link>
+
+                    <!-- KHUSUS SUPER ADMIN -->
+                    @if(Auth::user()->role === 'super_admin')
+                        <x-nav-link :href="route('admin.majors.index')" :active="request()->routeIs('admin.majors.*')">
+                            {{ __('Manajemen Jurusan') }}
+                        </x-nav-link>
+
+                        <x-nav-link :href="route('admin.students.index')" :active="request()->routeIs('admin.students.*')">
+                            {{ __('Manajemen Siswa') }}
+                        </x-nav-link>
+
+                        <x-nav-link :href="route('admin.templates.index')" :active="request()->routeIs('admin.templates.*')">
+                            {{ __('Manajemen Template') }}
+                        </x-nav-link>
                     @endif
+
+                    <!-- KHUSUS SISWA -->
+                    @if(Auth::user()->role === 'student')
+                        <x-nav-link :href="route('student.profile.edit')" :active="request()->routeIs('student.profile.*')">
+                            {{ __('Biodata PKL') }}
+                        </x-nav-link>
+                    @endif
+
                 </div>
             </div>
 
@@ -72,16 +90,31 @@
 
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+        <!-- Navigation Links -->
+        <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+            
+            <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard') || request()->routeIs('admin.dashboard')">
                 {{ __('Dashboard') }}
-            </x-responsive-nav-link>
-            <!-- Tambahan Menu Biodata -->
-            @if(Auth::user()->role === 'student')
-            <x-nav-link :href="route('student.profile.edit')" :active="request()->routeIs('student.profile.*')">
-                {{ __('Biodata PKL') }}
             </x-nav-link>
+
+            <!-- KHUSUS SUPER ADMIN -->
+            @if(Auth::user()->role === 'super_admin')
+                <x-nav-link :href="route('admin.majors.index')" :active="request()->routeIs('admin.majors.*')">
+                    {{ __('Manajemen Jurusan') }}
+                </x-nav-link>
+
+                <x-nav-link :href="route('admin.students.index')" :active="request()->routeIs('admin.students.*')">
+                    {{ __('Manajemen Siswa') }}
+                </x-nav-link>
             @endif
+
+            <!-- KHUSUS SISWA -->
+            @if(Auth::user()->role === 'student')
+                <x-nav-link :href="route('student.profile.edit')" :active="request()->routeIs('student.profile.*')">
+                    {{ __('Biodata PKL') }}
+                </x-nav-link>
+            @endif
+
         </div>
 
         <!-- Responsive Settings Options -->

@@ -17,11 +17,21 @@ class ExportController extends Controller
                             ->with(['student.major', 'dailyActivities', 'attendances', 'assessments.assessment'])
                             ->firstOrFail();
 
-        $templatePath = storage_path('app/templates/template_jurnal_tkj.docx');
-        if (!file_exists($templatePath)) {
-            return back()->withErrors(['access' => 'File template_jurnal_tkj.docx tidak ditemukan di storage/app/templates/.']);
+        // 1. CARI TEMPLATE YANG AKTIF DI DATABASE
+        $activeTemplate = \App\Models\Template::where('is_active', true)->first();
+        
+        if (!$activeTemplate) {
+            return back()->withErrors(['error' => 'Sistem gagal mencetak: Tidak ada Template Word yang aktif. Harap upload dan aktifkan di panel Admin.']);
         }
 
+        // Tentukan path ke template yang diupload (di dalam folder public)
+        $templatePath = storage_path('app/public/' . $activeTemplate->file_path);
+        
+        if (!file_exists($templatePath)) {
+            return back()->withErrors(['error' => 'File template fisik tidak ditemukan di server.']);
+        }
+
+        // 2. INISIALISASI TEMPLATE PROCESSOR
         $templateProcessor = new TemplateProcessor($templatePath);
 
         // Fungsi aman untuk mengisi string (mencegah null / error XML)

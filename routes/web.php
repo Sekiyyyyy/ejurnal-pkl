@@ -3,16 +3,56 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\JournalController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::redirect('/', '/login'); // Langsung arahkan ke halaman login
+
+// =======================================================
+// 1. ROUTE PINTU MASUK UTAMA (DISPATCHER)
+// =======================================================
+Route::get('/dashboard', function () {
+    // Jika yang login adalah Super Admin, lempar ke ruangan khusus Admin
+    if (Auth::user()->role === 'super_admin') {
+        return redirect()->route('admin.dashboard');
+    }
+    
+    // Jika yang login adalah Siswa, instansiasi controller dan jalankan method dashboard
+    return app()->make(JournalController::class)->dashboard();
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+
+// =======================================================
+// 2. GROUP ROUTE KHUSUS SUPER ADMIN
+// =======================================================
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    
+    // URL: /admin/dashboard
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    // Manajemen Jurusan
+    Route::get('/jurusan', [App\Http\Controllers\Admin\MajorController::class, 'index'])->name('majors.index');
+    Route::post('/jurusan', [App\Http\Controllers\Admin\MajorController::class, 'store'])->name('majors.store');
+    Route::delete('/jurusan/{id}', [App\Http\Controllers\Admin\MajorController::class, 'destroy'])->name('majors.destroy');
+
+    // Manajemen Akun Siswa 
+    Route::get('/siswa', [App\Http\Controllers\Admin\StudentController::class, 'index'])->name('students.index');
+    Route::get('/siswa/tambah', [App\Http\Controllers\Admin\StudentController::class, 'create'])->name('students.create');
+    Route::post('/siswa', [App\Http\Controllers\Admin\StudentController::class, 'store'])->name('students.store');
+    Route::delete('/siswa/{id}', [App\Http\Controllers\Admin\StudentController::class, 'destroy'])->name('students.destroy');
+
+    // Manajemen Template Word
+    Route::get('/template', [App\Http\Controllers\Admin\TemplateController::class, 'index'])->name('templates.index');
+    Route::post('/template', [App\Http\Controllers\Admin\TemplateController::class, 'store'])->name('templates.store');
+    Route::put('/template/{id}/activate', [App\Http\Controllers\Admin\TemplateController::class, 'activate'])->name('templates.activate');
+    Route::delete('/template/{id}', [App\Http\Controllers\Admin\TemplateController::class, 'destroy'])->name('templates.destroy');
 });
 
-// ROUTE KHUSUS SISWA
+
+// =======================================================
+// 3. GROUP ROUTE KHUSUS SISWA
+// =======================================================
 Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
-    
-    // Dashboard Siswa
-    Route::get('/dashboard', [JournalController::class, 'dashboard'])->name('dashboard');
     
     // Menu Detail Jurnal
     Route::get('/jurnal/{id}', [JournalController::class, 'show'])->name('journal.show');
@@ -50,7 +90,10 @@ Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
     Route::put('/biodata', [App\Http\Controllers\StudentProfileController::class, 'update'])->name('student.profile.update');
 });
 
-// Route Profil Bawaan Breeze
+
+// =======================================================
+// 4. ROUTE PROFIL BAWAAN BREEZE
+// =======================================================
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
