@@ -1,64 +1,70 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
+    <!-- Header -->
+    <div class="mb-6 text-center text-white">
+        <h1 class="text-xl font-extrabold tracking-wide drop-shadow-sm uppercase">E-JURNAL SMKN 1 BERINGIN</h1>
+        <p class="mt-1 text-sm font-medium text-white/90">Daftar untuk melanjutkan</p>
+    </div>
+
+    <form method="POST" action="{{ route('register') }}" class="space-y-4">
         @csrf
 
-        <!-- Name -->
+        <!-- Input Nama -->
         <div>
-            <x-input-label for="name" value="Nama Lengkap" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+            <label for="name" class="mb-1 block text-xs font-semibold text-white drop-shadow-sm">Nama Lengkap</label>
+            <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus
+                   class="block w-full rounded-lg border-none bg-[#f4f7fb] px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#21a650]">
         </div>
 
-        <!-- NISN -->
-        <div class="mt-4">
-            <x-input-label for="nisn" value="NISN" />
-            <x-text-input id="nisn" class="block mt-1 w-full" type="text" name="nisn" :value="old('nisn')" required autocomplete="nisn" />
-            <x-input-error :messages="$errors->get('nisn')" class="mt-2" />
+        <!-- Input NISN -->
+        <div>
+            <label for="nisn" class="mb-1 block text-xs font-semibold text-white drop-shadow-sm">NISN</label>
+            <input id="nisn" type="text" name="nisn" value="{{ old('nisn') }}" required
+                   class="block w-full rounded-lg border-none bg-[#f4f7fb] px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#21a650]">
         </div>
-
-        <!-- Jurusan -->
-        <div class="mt-4">
-            <x-input-label for="major_id" value="Jurusan" />
-            <select id="major_id" name="major_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                <option value="" disabled selected>-- Pilih Jurusan --</option>
+        
+        <!-- Input Jurusan -->
+        <div>
+            <label for="major_id" class="mb-1 block text-xs font-semibold text-white drop-shadow-sm">Jurusan</label>
+            <select id="major_id" name="major_id" required
+                    class="block w-full rounded-lg border-none bg-[#f4f7fb] px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-[#21a650]">
+                <option value="" disabled selected>Pilih</option>
                 @foreach($majors as $major)
-                    <option value="{{ $major->id }}" {{ old('major_id') == $major->id ? 'selected' : '' }}>
-                        {{ $major->name }}
-                    </option>
+                    <option value="{{ $major->id }}">{{ $major->name }}</option>
                 @endforeach
             </select>
-            <x-input-error :messages="$errors->get('major_id')" class="mt-2" />
         </div>
 
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" value="Email" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <!-- Input Email -->
+        <div>
+            <label for="email" class="mb-1 block text-xs font-semibold text-white drop-shadow-sm">Email</label>
+            <input id="email" type="email" name="email" value="{{ old('email') }}" required
+                   class="block w-full rounded-lg border-none bg-[#f4f7fb] px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#21a650]">
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" value="Password" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <!-- Input Password -->
+        <div>
+            <label for="password" class="mb-1 block text-xs font-semibold text-white drop-shadow-sm">Password</label>
+            <input id="password" type="password" name="password" required
+                   class="block w-full rounded-lg border-none bg-[#f4f7fb] px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#21a650]">
+        </div>
+        
+        <!-- Konfirmasi Password -->
+        <div>
+            <label for="password_confirmation" class="mb-1 block text-xs font-semibold text-white drop-shadow-sm">Konfirmasi</label>
+            <input id="password_confirmation" type="password" name="password_confirmation" required
+                   class="block w-full rounded-lg border-none bg-[#f4f7fb] px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#21a650]">
         </div>
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" value="Konfirmasi Password" />
-            <x-text-input id="password_confirmation" class="block mt-1 w-full" type="password" name="password_confirmation" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                Sudah punya akun?
-            </a>
-
-            <x-primary-button class="ms-4">
+        <!-- Tombol Daftar -->
+        <div class="pt-3">
+            <button type="submit" class="w-full rounded-lg bg-[#21a650] py-3 text-sm font-bold text-white transition hover:bg-[#1d8f45]">
                 Daftar
-            </x-primary-button>
+            </button>
+        </div>
+
+        <!-- Link ke Login -->
+        <div class="mt-4 text-center text-xs font-medium text-white drop-shadow-sm">
+            Sudah punya akun? <a href="{{ route('login') }}" class="font-bold hover:underline">Masuk di sini</a>
         </div>
     </form>
 </x-guest-layout>

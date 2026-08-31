@@ -3,14 +3,17 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
-                <!-- Logo -->
+                <!-- Logo & Judul Aplikasi -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
+                        <!-- Logo Sekolah -->
+                        <img src="{{ asset('images/logo.png') }}" alt="Logo Sekolah" class="block h-10 w-auto" />
+                        <!-- Tulisan E-Jurnal -->
+                        <span class="font-bold text-xl text-gray-800 tracking-wide" style="font-family: 'Merriweather', serif;">E-Jurnal</span>
                     </a>
                 </div>
 
-                <!-- Navigation Links -->
+                <!-- Navigation Links (Desktop) -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard') || request()->routeIs('admin.dashboard')">
@@ -42,7 +45,7 @@
                 </div>
             </div>
 
-            <!-- Settings Dropdown -->
+            <!-- Settings Dropdown (Desktop) -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
@@ -76,7 +79,7 @@
                 </x-dropdown>
             </div>
 
-            <!-- Hamburger -->
+            <!-- Hamburger (Mobile Toggle) -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
@@ -88,31 +91,36 @@
         </div>
     </div>
 
-    <!-- Responsive Navigation Menu -->
+    <!-- Responsive Navigation Menu (Mobile Menu) -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <!-- Navigation Links -->
-        <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+        
+        <!-- Navigation Links (Mobile) -->
+        <div class="pt-2 pb-3 space-y-1">
             
-            <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard') || request()->routeIs('admin.dashboard')">
+            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard') || request()->routeIs('admin.dashboard')">
                 {{ __('Dashboard') }}
-            </x-nav-link>
+            </x-responsive-nav-link>
 
             <!-- KHUSUS SUPER ADMIN -->
             @if(Auth::user()->role === 'super_admin')
-                <x-nav-link :href="route('admin.majors.index')" :active="request()->routeIs('admin.majors.*')">
+                <x-responsive-nav-link :href="route('admin.majors.index')" :active="request()->routeIs('admin.majors.*')">
                     {{ __('Manajemen Jurusan') }}
-                </x-nav-link>
+                </x-responsive-nav-link>
 
-                <x-nav-link :href="route('admin.students.index')" :active="request()->routeIs('admin.students.*')">
+                <x-responsive-nav-link :href="route('admin.students.index')" :active="request()->routeIs('admin.students.*')">
                     {{ __('Manajemen Siswa') }}
-                </x-nav-link>
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('admin.templates.index')" :active="request()->routeIs('admin.templates.*')">
+                    {{ __('Manajemen Template') }}
+                </x-responsive-nav-link>
             @endif
 
             <!-- KHUSUS SISWA -->
             @if(Auth::user()->role === 'student')
-                <x-nav-link :href="route('student.profile.edit')" :active="request()->routeIs('student.profile.*')">
+                <x-responsive-nav-link :href="route('student.profile.edit')" :active="request()->routeIs('student.profile.*')">
                     {{ __('Biodata PKL') }}
-                </x-nav-link>
+                </x-responsive-nav-link>
             @endif
 
         </div>

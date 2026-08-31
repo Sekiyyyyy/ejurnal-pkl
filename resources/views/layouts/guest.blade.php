@@ -5,25 +5,35 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'E-Jurnal SMKN 1 Beringin') }}</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <!-- Font Poppins agar persis seperti gambar -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-        <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
-                </a>
-            </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
-                {{ $slot }}
+        <style>
+            body { font-family: 'Poppins', sans-serif; }
+        </style>
+    </head>
+    <body class="text-white antialiased">
+        <!-- Background foto sekolah dengan overlay warna teal pekat khas referensimu -->
+        <div class="relative flex min-h-screen flex-col items-center justify-center bg-cover bg-center px-4 py-10" 
+             style="background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=1920');">
+            
+            <!-- Overlay Gelap (Teal/Cyan gelap) -->
+            <div class="absolute inset-0 bg-[#0f545a]/80"></div>
+
+            <!-- Container dibikin lebih ramping (max-w-[420px]) mengikuti proporsi gambar -->
+            <div class="relative z-10 w-full max-w-[420px]">
+                
+                <!-- Panel Kaca transparan persis seperti gambar -->
+                <div class="w-full rounded-2xl border border-white/20 bg-white/20 p-8 shadow-2xl backdrop-blur-md">
+                    {{ $slot }}
+                </div>
+
             </div>
         </div>
     </body>
