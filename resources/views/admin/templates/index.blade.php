@@ -25,13 +25,25 @@
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                     <h3 class="text-lg font-bold text-gray-900 border-b pb-2 mb-4">Upload Template Baru</h3>
                     <div class="text-sm text-gray-500 mb-4">
-                        Pastikan file berformat <strong>.docx</strong> dan memiliki parameter mapping yang tepat (misal: <code>${siswa_nama}</code>).
+                        Pastikan file berformat <strong>.docx</strong> dan memiliki parameter mapping yang tepat.
                     </div>
                     <form action="{{ route('admin.templates.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
+                        
+                        <!-- PILIH JURUSAN -->
+                        <div class="mb-4">
+                            <x-input-label for="major_id" value="Jurusan Tujuan" />
+                            <select id="major_id" name="major_id" class="block mt-1 w-full border-gray-300 rounded-md text-sm" required>
+                                <option value="" disabled selected>-- Pilih Jurusan --</option>
+                                @foreach($majors as $major)
+                                    <option value="{{ $major->id }}">{{ $major->code }} - {{ $major->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <div class="mb-4">
                             <x-input-label for="name" value="Nama / Versi Template" />
-                            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" placeholder="Misal: Format Jurnal 2026" required />
+                            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" placeholder="Misal: Format Jurnal PPLG 2026" required />
                         </div>
                         <div class="mb-4">
                             <x-input-label for="file" value="File Dokumen (.docx)" />
@@ -49,6 +61,7 @@
                             <thead class="text-xs text-gray-700 uppercase bg-gray-100">
                                 <tr>
                                     <th class="px-4 py-3 border">Nama Template</th>
+                                    <th class="px-4 py-3 border">Jurusan</th>
                                     <th class="px-4 py-3 border text-center">Status</th>
                                     <th class="px-4 py-3 border text-center w-48">Aksi</th>
                                 </tr>
@@ -57,6 +70,7 @@
                                 @forelse($templates as $template)
                                 <tr class="border-b hover:bg-gray-50">
                                     <td class="px-4 py-3 border font-medium text-gray-900">{{ $template->name }}</td>
+                                    <td class="px-4 py-3 border">{{ $template->major->code ?? '-' }}</td>
                                     <td class="px-4 py-3 border text-center">
                                         @if($template->is_active)
                                             <span class="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded">AKTIF DIGUNAKAN</span>

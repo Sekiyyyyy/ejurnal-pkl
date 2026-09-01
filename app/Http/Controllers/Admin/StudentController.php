@@ -63,13 +63,23 @@ class StudentController extends Controller
     public function destroy($id)
     {
         $student = Student::findOrFail($id);
-        
-        // Hapus akun User (otomatis menghapus Student jika foreign key constraint-nya 'cascade')
-        // Tapi kita hapus manual untuk memastikan data bersih
-        $userId = $student->user_id;
-        $student->delete(); 
-        User::where('id', $userId)->delete();
 
-        return back()->with('success', 'Akun siswa dan seluruh datanya berhasil dihapus!');
+        // 1. Hapus semua jurnal dan data turunannya milik siswa ini terlebih dahulu
+        foreach ($student->journals as $journal) {
+            $journal->dailyActivities()->delete();
+            $journal->attendances()->delete();
+            $journal->assessments()->delete();
+            $journal->delete();
+        }
+
+        // 2. Hapus data profil siswa
+        $student->delete();
+
+        // 3. Hapus akun user login siswa tersebut jika ada
+        if ($student->user) {
+            $student->user->delete();
+        }
+
+        return back()->with('success', 'Data siswa dan seluruh jurnal terkait berhasil dihapus.');
     }
 }

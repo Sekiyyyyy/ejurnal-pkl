@@ -2,9 +2,22 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Template extends Model
 {
-    protected $fillable = ['name', 'file_path', 'is_active'];
+    use HasFactory;
+
+    protected $fillable = [
+        'major_id',
+        'name',
+        'file_path',
+        'is_active',
+    ];
+
+    public function major()
+    {
+        return $this->belongsTo(Major::class);
+    }
 }

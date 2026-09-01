@@ -24,64 +24,85 @@ class JournalController extends Controller
     {
         $student = Auth::user()->student;
 
-        // Perhatikan tambahan 'assessments.assessment' di bawah ini
         $journal = Journal::where('id', $id)
                             ->where('student_id', $student->id)
-                            ->with(['dailyActivities', 'attendances', 'assessments.assessment'])
+                            ->with(['dailyActivities', 'assessments.assessment'])
                             ->firstOrFail();
 
         if ($journal->phase == 2) {
             $journalFase1 = Journal::where('student_id', $student->id)->where('phase', 1)->first();
-            $completedStatuses = ['COMPLETED', 'READY_TO_GENERATE', 'GENERATED'];
-            if ($journalFase1 && !in_array($journalFase1->status, $completedStatuses)) {
-                return redirect()->route('dashboard')->withErrors(['access' => 'Akses Ditolak! Selesaikan Jurnal Fase 1 terlebih dahulu.']);
+            if ($journalFase1) {
+                $progressFase1 = $this->calculateProgress($journalFase1, $student);
+                if ($progressFase1 < 100) {
+                    return redirect()->route('dashboard')->withErrors(['access' => 'Akses Ditolak! Selesaikan Jurnal Fase 1 hingga 100% terlebih dahulu (Saat ini baru ' . $progressFase1 . '%).']);
+                }
+            } else {
+                return redirect()->route('dashboard')->withErrors(['access' => 'Akses Ditolak! Jurnal Fase 1 belum tersedia.']);
             }
         }
 
-        // --- CEK STATUS MASING-MASING FITUR ---
-        // --- CEK STATUS MASING-MASING FITUR ---
-        
-        // Pengecekan ketat: Semua data form PKL harus terisi tidak boleh ada yang null/kosong
-        $isDataPklFilled = $journal->company_name && 
-                            $journal->company_address &&
-                            $journal->start_date && 
-                            $journal->end_date &&
-                            $journal->instructor_name &&
-                            $journal->instructor_position &&
-                            $journal->instructor_phone &&
-                            $journal->instructor_address &&
-                            $journal->teacher_name &&
-                            $journal->teacher_phone &&
-                            $journal->teacher_address;
-        $isKehadiranFilled = $journal->attendances->count() > 0;
-        $isKegiatanFilled = $journal->dailyActivities->count() > 0;
-        
-        // Cek spesifik berdasarkan kategori tabel master
-        $isMonitoringFilled = $journal->assessments->where('assessment.category', 'monitoring')->count() > 0;
-        $isPenilaianFilled = $journal->assessments->whereIn('assessment.category', ['grade_technical', 'grade_non_technical'])->count() > 0;
-        
-        // HARUS ADA 6 GAMBAR INI AGAR TANDA TANGAN VALID
-        $isTtdFilled = $journal->student_signature 
-                    && $journal->parent_signature 
-                    && $journal->instructor_signature 
-                    && $journal->instructor_paraf
-                    && $journal->teacher_signature
-                    && $journal->kaprog_signature;
+        $progress = $this->calculateProgress($journal, $student);
 
-        // --- HITUNG PROGRESS (Total 100%) ---
-        $progress = 0;
-        if ($isDataPklFilled) $progress += 20;
-        if ($isKehadiranFilled) $progress += 10;
-        if ($isKegiatanFilled) $progress += 10;
-        if ($isMonitoringFilled) $progress += 20;
-        if ($isPenilaianFilled) $progress += 20;
-        if ($isTtdFilled) $progress += 20;
+        // Variabel status untuk view
+        $isProfileFilled = !empty($student->class) && !empty($student->gender) && !empty($student->birth_place) && !empty($student->birth_date) && !empty($student->religion) && !empty($student->address) && !empty($student->phone) && !empty($student->parent_name) && !empty($student->parent_phone) && !empty($student->parent_address);
+
+        $isDataPklFilled = !empty($journal->company_name) && !empty($journal->company_address) && !empty($journal->start_date) && !empty($journal->end_date) && !empty($journal->instructor_name) && !empty($journal->teacher_name);
+
+        // Pengecekan rentang tanggal harian (gabungan absensi & logbook)
+        $isDailyFilled = false;
+        if ($journal->start_date && $journal->end_date) {
+            $startDate = \Carbon\Carbon::parse($journal->start_date);
+            $endDate = \Carbon\Carbon::parse($journal->end_date);
+            $totalDays = $startDate->diffInDays($endDate) + 1;
+            $recordedDays = $journal->dailyActivities()
+                                    ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+                                    ->count();
+            $isDailyFilled = ($recordedDays >= $totalDays && $totalDays > 0);
+        }
+
+        $isMonitoringFilled = $journal->assessments->where('assessment.category', 'monitoring')->count() > 0;
+        $isPenilaianFilled = $journal->assessments->whereIn('assessment.category', ['grade_technical', 'grade_non_technical', 'grade_custom'])->count() > 0;
+        
+        $isTtdFilled = !empty($journal->student_signature) && !empty($journal->parent_signature) && !empty($journal->instructor_signature) && !empty($journal->instructor_paraf) && !empty($journal->teacher_signature) && !empty($journal->kaprog_signature);
 
         return view('student.journal.show', compact(
             'journal', 'progress', 
-            'isDataPklFilled', 'isKehadiranFilled', 'isKegiatanFilled', 
+            'isProfileFilled', 'isDataPklFilled', 'isDailyFilled', 
             'isMonitoringFilled', 'isPenilaianFilled', 'isTtdFilled'
         ));
+    }
+
+    private function calculateProgress($journal, $student)
+    {
+        $isProfileFilled = !empty($student->class) && !empty($student->gender) && !empty($student->birth_place) && !empty($student->birth_date) && !empty($student->religion) && !empty($student->address) && !empty($student->phone) && !empty($student->parent_name) && !empty($student->parent_phone) && !empty($student->parent_address);
+
+        $isDataPklFilled = !empty($journal->company_name) && !empty($journal->company_address) && !empty($journal->start_date) && !empty($journal->end_date) && !empty($journal->instructor_name) && !empty($journal->teacher_name);
+
+        $isDailyFilled = false;
+        if ($journal->start_date && $journal->end_date) {
+            $startDate = \Carbon\Carbon::parse($journal->start_date);
+            $endDate = \Carbon\Carbon::parse($journal->end_date);
+            $totalDays = $startDate->diffInDays($endDate) + 1;
+            $recordedDays = $journal->dailyActivities()
+                                    ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+                                    ->count();
+            $isDailyFilled = ($recordedDays >= $totalDays && $totalDays > 0);
+        }
+
+        $isMonitoringFilled = $journal->assessments->where('assessment.category', 'monitoring')->count() > 0;
+        $isPenilaianFilled = $journal->assessments->whereIn('assessment.category', ['grade_technical', 'grade_non_technical', 'grade_custom'])->count() > 0;
+        
+        $isTtdFilled = !empty($journal->student_signature) && !empty($journal->parent_signature) && !empty($journal->instructor_signature) && !empty($journal->instructor_paraf) && !empty($journal->teacher_signature) && !empty($journal->kaprog_signature);
+
+        $progress = 0;
+        if ($isProfileFilled) $progress += 15;
+        if ($isDataPklFilled) $progress += 15;
+        if ($isDailyFilled) $progress += 20; // 20% gabungan kehadiran & kegiatan
+        if ($isMonitoringFilled) $progress += 15;
+        if ($isPenilaianFilled) $progress += 15;
+        if ($isTtdFilled) $progress += 20;
+
+        return $progress;
     }
 
     // --- FORM DATA PKL ---
@@ -95,25 +116,26 @@ class JournalController extends Controller
     {
         $journal = Journal::where('id', $id)->where('student_id', Auth::user()->student->id)->firstOrFail();
 
+        // Validasi dibuat fleksibel (nullable) untuk mendukung pengisian berkala
         $request->validate([
-            'company_name' => 'required|string|max:255',
-            'company_address' => 'required|string|max:255',
-            'teacher_name' => 'required|string|max:255',
-            'teacher_address' => 'required|string', // Baru
-            'teacher_phone' => 'required|string|max:20', // Baru
-            'instructor_name' => 'required|string|max:255',
-            'instructor_position' => 'required|string|max:255',
-            'instructor_address' => 'required|string', // Baru
-            'instructor_phone' => 'required|string|max:20',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
+            'company_name' => 'nullable|string|max:255',
+            'company_address' => 'nullable|string|max:255',
+            'teacher_name' => 'nullable|string|max:255',
+            'teacher_address' => 'nullable|string',
+            'teacher_phone' => 'nullable|string|max:20',
+            'instructor_name' => 'nullable|string|max:255',
+            'instructor_position' => 'nullable|string|max:255',
+            'instructor_address' => 'nullable|string',
+            'instructor_phone' => 'nullable|string|max:20',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
 
         $journal->update($request->all() + [
             'status' => $journal->status === 'DRAFT' ? 'IN_PROGRESS' : $journal->status
         ]);
 
-        return redirect()->route('journal.show', $journal->id)->with('success', 'Data PKL berhasil disimpan.');
+        return redirect()->route('journal.show', $journal->id)->with('success', 'Data PKL berhasil disimpan secara berkala.');
     }
 
     // --- FITUR GURU PEMBIMBING (DIPINDAH KE AKUN SISWA) ---

@@ -70,14 +70,16 @@ Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
     // Form Pengisian Data PKL
     Route::get('/jurnal/{id}/data-pkl', [JournalController::class, 'editDataPkl'])->name('journal.data-pkl');
     Route::put('/jurnal/{id}/data-pkl', [JournalController::class, 'updateDataPkl'])->name('journal.update-data-pkl');
-    
-    // Kehadiran PKL
-    Route::get('/jurnal/{id}/kehadiran', [App\Http\Controllers\AttendanceController::class, 'index'])->name('journal.attendance');
-    Route::post('/jurnal/{id}/kehadiran', [App\Http\Controllers\AttendanceController::class, 'store'])->name('journal.store-attendance');
 
     // Kegiatan Harian PKL
     Route::get('/jurnal/{id}/kegiatan', [App\Http\Controllers\DailyActivityController::class, 'index'])->name('journal.activity');
     Route::post('/jurnal/{id}/kegiatan', [App\Http\Controllers\DailyActivityController::class, 'store'])->name('journal.store-activity');
+
+    // TAMBAHKAN 3 BARIS INI UNTUK FITUR EDIT & HAPUS LOGBOOK:
+    Route::get('/jurnal/{id}/kegiatan/{activityId}/edit', [App\Http\Controllers\DailyActivityController::class, 'edit'])->name('journal.edit-activity');
+    Route::put('/jurnal/{id}/kegiatan/{activityId}', [App\Http\Controllers\DailyActivityController::class, 'update'])->name('journal.update-activity');
+    Route::delete('/jurnal/{id}/kegiatan/{activityId}', [App\Http\Controllers\DailyActivityController::class, 'destroy'])->name('journal.delete-activity');
+
     Route::put('/jurnal/{id}/kegiatan/{activityId}/approve', [App\Http\Controllers\DailyActivityController::class, 'approve'])->name('journal.approve-activity');
 
     // Tanda Tangan & Paraf

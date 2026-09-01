@@ -50,14 +50,16 @@
                                                 @endif
                                             </td>
                                             <td class="p-2 text-center">
+                                                <!-- Radio Button Ya -->
                                                 <input type="radio" name="obs_yes[{{ $child->id }}]" value="1" 
                                                     {{ old('obs_yes.'.$child->id, optional($existing[$child->id] ?? null)->is_yes) == '1' ? 'checked' : '' }} 
-                                                    class="text-indigo-600" {{ $point->order_number == 3 ? '' : 'required' }}>
+                                                    class="text-indigo-600">
                                             </td>
                                             <td class="p-2 text-center">
+                                                <!-- Radio Button Tidak -->
                                                 <input type="radio" name="obs_yes[{{ $child->id }}]" value="0" 
                                                     {{ old('obs_yes.'.$child->id, optional($existing[$child->id] ?? null)->is_yes) == '0' ? 'checked' : '' }} 
-                                                    class="text-indigo-600" {{ $point->order_number == 3 ? '' : 'required' }}>
+                                                    class="text-indigo-600">
                                             </td>
                                         </tr>
                                         @endforeach
@@ -67,7 +69,7 @@
                                 <!-- Deskripsi Kesimpulan Observasi -->
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-1">Deskripsi & Catatan (Terkait {{ $point->name }})</label>
-                                    <textarea name="obs_desc[{{ $point->id }}]" rows="2" class="w-full border-gray-300 rounded text-sm" placeholder="Peserta didik sudah... namun perlu ditingkatkan dalam hal..." required>{{ optional($existing[$point->id] ?? null)->description }}</textarea>
+                                    <textarea name="obs_desc[{{ $point->id }}]" rows="2" class="w-full border-gray-300 rounded text-sm" placeholder="Peserta didik sudah... namun perlu ditingkatkan dalam hal...">{{ optional($existing[$point->id] ?? null)->description }}</textarea>
                                 </div>
                             </div>
                         @endforeach

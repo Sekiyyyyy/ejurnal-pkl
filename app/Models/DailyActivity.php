@@ -9,6 +9,7 @@ class DailyActivity extends Model
     protected $fillable = [
         'journal_id',
         'date',
+        'status',
         'division',
         'activity',
         'start_time',

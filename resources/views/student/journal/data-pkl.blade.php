@@ -21,19 +21,19 @@
                         </div>
                         <div>
                             <x-input-label for="company_name" value="Nama Tempat PKL" />
-                            <x-text-input id="company_name" class="block mt-1 w-full" type="text" name="company_name" :value="old('company_name', $journal->company_name)" required />
+                            <x-text-input id="company_name" class="block mt-1 w-full" type="text" name="company_name" :value="old('company_name', $journal->company_name)"/>
                         </div>
                         <div>
                             <x-input-label for="company_address" value="Alamat Tempat PKL" />
-                            <x-text-input id="company_address" class="block mt-1 w-full" type="text" name="company_address" :value="old('company_address', $journal->company_address)" required />
+                            <x-text-input id="company_address" class="block mt-1 w-full" type="text" name="company_address" :value="old('company_address', $journal->company_address)"/>
                         </div>
                         <div>
                             <x-input-label for="start_date" value="Tanggal Mulai PKL" />
-                            <x-text-input id="start_date" class="block mt-1 w-full" type="date" name="start_date" :value="old('start_date', $journal->start_date ? \Carbon\Carbon::parse($journal->start_date)->format('Y-m-d') : '')" required />
+                            <x-text-input id="start_date" class="block mt-1 w-full" type="date" name="start_date" :value="old('start_date', $journal->start_date ? \Carbon\Carbon::parse($journal->start_date)->format('Y-m-d') : '')"/>
                         </div>
                         <div>
                             <x-input-label for="end_date" value="Tanggal Selesai PKL" />
-                            <x-text-input id="end_date" class="block mt-1 w-full" type="date" name="end_date" :value="old('end_date', $journal->end_date ? \Carbon\Carbon::parse($journal->end_date)->format('Y-m-d') : '')" required />
+                            <x-text-input id="end_date" class="block mt-1 w-full" type="date" name="end_date" :value="old('end_date', $journal->end_date ? \Carbon\Carbon::parse($journal->end_date)->format('Y-m-d') : '')"/>
                         </div>
 
                         <!-- Data Instruktur -->
@@ -42,19 +42,19 @@
                         </div>
                         <div>
                             <x-input-label for="instructor_name" value="Nama Instruktur" />
-                            <x-text-input id="instructor_name" class="block mt-1 w-full" type="text" name="instructor_name" :value="old('instructor_name', $journal->instructor_name)" required />
+                            <x-text-input id="instructor_name" class="block mt-1 w-full" type="text" name="instructor_name" :value="old('instructor_name', $journal->instructor_name)"/>
                         </div>
                         <div>
                             <x-input-label for="instructor_position" value="Jabatan Instruktur" />
-                            <x-text-input id="instructor_position" class="block mt-1 w-full" type="text" name="instructor_position" :value="old('instructor_position', $journal->instructor_position)" required />
+                            <x-text-input id="instructor_position" class="block mt-1 w-full" type="text" name="instructor_position" :value="old('instructor_position', $journal->instructor_position)"/>
                         </div>
                         <div>
                             <x-input-label for="instructor_phone" value="No. HP/WA Instruktur" />
-                            <x-text-input id="instructor_phone" class="block mt-1 w-full" type="text" name="instructor_phone" :value="old('instructor_phone', $journal->instructor_phone)" required />
+                            <x-text-input id="instructor_phone" class="block mt-1 w-full" type="text" name="instructor_phone" :value="old('instructor_phone', $journal->instructor_phone)"/>
                         </div>
                         <div>
                             <x-input-label for="instructor_address" value="Alamat Instruktur" />
-                            <x-text-input id="instructor_address" class="block mt-1 w-full" type="text" name="instructor_address" :value="old('instructor_address', $journal->instructor_address)" required />
+                            <x-text-input id="instructor_address" class="block mt-1 w-full" type="text" name="instructor_address" :value="old('instructor_address', $journal->instructor_address)"/>
                         </div>
 
                         <!-- Data Guru Pembimbing -->
@@ -63,15 +63,15 @@
                         </div>
                         <div class="md:col-span-2">
                             <x-input-label for="teacher_name" value="Nama Guru Pembimbing (Beserta Gelar)" />
-                            <x-text-input id="teacher_name" class="block mt-1 w-full" type="text" name="teacher_name" :value="old('teacher_name', $journal->teacher_name)" placeholder="Misal: Budi Guru, S.Kom" required />
+                            <x-text-input id="teacher_name" class="block mt-1 w-full" type="text" name="teacher_name" :value="old('teacher_name', $journal->teacher_name)" placeholder="Misal: Budi Guru, S.Kom"/>
                         </div>
                         <div>
                             <x-input-label for="teacher_phone" value="No. HP/WA Guru" />
-                            <x-text-input id="teacher_phone" class="block mt-1 w-full" type="text" name="teacher_phone" :value="old('teacher_phone', $journal->teacher_phone)" required />
+                            <x-text-input id="teacher_phone" class="block mt-1 w-full" type="text" name="teacher_phone" :value="old('teacher_phone', $journal->teacher_phone)"/>
                         </div>
                         <div>
                             <x-input-label for="teacher_address" value="Alamat Guru" />
-                            <x-text-input id="teacher_address" class="block mt-1 w-full" type="text" name="teacher_address" :value="old('teacher_address', $journal->teacher_address)" required />
+                            <x-text-input id="teacher_address" class="block mt-1 w-full" type="text" name="teacher_address" :value="old('teacher_address', $journal->teacher_address)"/>
                         </div>
                     </div>
 

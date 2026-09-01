@@ -31,14 +31,14 @@
                                 <label class="inline-flex items-center cursor-pointer">
                                     <input type="radio" name="monitoring[{{ $item->id }}]" value="1" 
                                         {{ old("monitoring.{$item->id}", optional($existingAnswers[$item->id] ?? null)->is_yes) == '1' ? 'checked' : '' }} 
-                                        class="text-indigo-600 focus:ring-indigo-500" required>
+                                        class="text-indigo-600 focus:ring-indigo-500">
                                     <span class="ml-2 text-sm text-gray-700 font-semibold">Ya</span>
                                 </label>
 
                                 <label class="inline-flex items-center cursor-pointer">
                                     <input type="radio" name="monitoring[{{ $item->id }}]" value="0" 
                                         {{ old("monitoring.{$item->id}", optional($existingAnswers[$item->id] ?? null)->is_yes) == '0' ? 'checked' : '' }} 
-                                        class="text-indigo-600 focus:ring-indigo-500" required>
+                                        class="text-indigo-600 focus:ring-indigo-500">
                                     <span class="ml-2 text-sm text-gray-700 font-semibold">Tidak</span>
                                 </label>
                             </div>

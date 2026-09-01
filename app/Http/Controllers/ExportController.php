@@ -17,8 +17,11 @@ class ExportController extends Controller
                             ->with(['student.major', 'dailyActivities', 'attendances', 'assessments.assessment'])
                             ->firstOrFail();
 
-        // 1. CARI TEMPLATE YANG AKTIF DI DATABASE
-        $activeTemplate = \App\Models\Template::where('is_active', true)->first();
+        // 1. CARI TEMPLATE YANG AKTIF BERDASARKAN JURUSAN SISWA
+        $studentMajorId = $journal->student->major_id;
+        $activeTemplate = \App\Models\Template::where('major_id', $studentMajorId)
+                                            ->where('is_active', true)
+                                            ->first();
         
         if (!$activeTemplate) {
             return back()->withErrors(['error' => 'Sistem gagal mencetak: Tidak ada Template Word yang aktif. Harap upload dan aktifkan di panel Admin.']);

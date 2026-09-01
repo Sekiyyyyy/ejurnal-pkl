@@ -43,6 +43,15 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 
+                <!-- Card Biodata Diri -->
+                <a href="{{ route('student.profile.edit') }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 {{ $isProfileFilled ? 'border-green-500' : 'border-sky-500' }}">
+                    <h3 class="text-lg font-bold text-gray-900">Biodata Diri</h3>
+                    <p class="text-sm text-gray-500 mt-1">Identitas siswa dan orang tua</p>
+                    <div class="mt-3 text-sm font-semibold {{ $isProfileFilled ? 'text-green-600' : 'text-sky-600' }}">
+                        {{ $isProfileFilled ? '✓ Biodata lengkap' : '⚠ Belum lengkap' }}
+                    </div>
+                </a>
+
                 <!-- Card Data PKL -->
                 <a href="{{ route('journal.data-pkl', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 {{ $isDataPklFilled ? 'border-green-500' : 'border-indigo-500' }}">
                     <h3 class="text-lg font-bold text-gray-900">Data PKL</h3>
@@ -52,21 +61,12 @@
                     </div>
                 </a>
 
-                <!-- Card Kehadiran -->
-                <a href="{{ route('journal.attendance', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 {{ $isKehadiranFilled ? 'border-green-500' : 'border-blue-500' }}">
-                    <h3 class="text-lg font-bold text-gray-900">Kehadiran</h3>
-                    <p class="text-sm text-gray-500 mt-1">Isi absen harian (Hadir, Izin, Sakit)</p>
-                    <div class="mt-3 text-sm font-semibold {{ $isKehadiranFilled ? 'text-green-600' : 'text-blue-600' }}">
-                        {{ $isKehadiranFilled ? '✓ '.$journal->attendances()->count().' Hari Tercatat' : '⚠ Belum ada absen' }}
-                    </div>
-                </a>
-
-                <!-- Card Kegiatan Harian -->
-                <a href="{{ route('journal.activity', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 {{ $isKegiatanFilled ? 'border-green-500' : 'border-emerald-500' }}">
-                    <h3 class="text-lg font-bold text-gray-900">Kegiatan Harian</h3>
-                    <p class="text-sm text-gray-500 mt-1">Catat aktivitas harian dan paraf</p>
-                    <div class="mt-3 text-sm font-semibold {{ $isKegiatanFilled ? 'text-green-600' : 'text-emerald-600' }}">
-                        {{ $isKegiatanFilled ? '✓ '.$journal->dailyActivities()->count().' Kegiatan Tercatat' : '⚠ Belum ada logbook' }}
+                <!-- Card Kehadiran & Kegiatan Harian (Digabung) -->
+                <a href="{{ route('journal.activity', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 {{ $isDailyFilled ? 'border-green-500' : 'border-emerald-500' }}">
+                    <h3 class="text-lg font-bold text-gray-900">Kehadiran & Kegiatan</h3>
+                    <p class="text-sm text-gray-500 mt-1">Absensi harian dan logbook aktivitas</p>
+                    <div class="mt-3 text-sm font-semibold {{ $isDailyFilled ? 'text-green-600' : 'text-emerald-600' }}">
+                        {{ $isDailyFilled ? '✓ Sesuai periode tanggal PKL' : '⚠ Belum lengkap / kurang' }}
                     </div>
                 </a>
 
