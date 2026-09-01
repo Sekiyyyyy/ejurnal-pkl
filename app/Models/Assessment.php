@@ -13,4 +13,10 @@ class Assessment extends Model
     {
         return $this->hasMany(Assessment::class, 'parent_id')->orderBy('order_number');
     }
+
+    // Relasi ke Jurusan
+    public function major()
+    {
+        return $this->belongsTo(Major::class);
+    }
 }

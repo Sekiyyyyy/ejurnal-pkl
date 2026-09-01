@@ -13,6 +13,9 @@
             <label for="name" class="mb-1 block text-xs font-semibold text-white drop-shadow-sm">Nama Lengkap</label>
             <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus
                    class="block w-full rounded-lg border-none bg-[#f4f7fb] px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#21a650]">
+            @error('name')
+                <span class="text-red-300 text-xs mt-1 block">{{ $message }}</span>
+            @enderror
         </div>
 
         <!-- Input NISN -->
@@ -20,6 +23,9 @@
             <label for="nisn" class="mb-1 block text-xs font-semibold text-white drop-shadow-sm">NISN</label>
             <input id="nisn" type="text" name="nisn" value="{{ old('nisn') }}" required
                    class="block w-full rounded-lg border-none bg-[#f4f7fb] px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#21a650]">
+            @error('nisn')
+                <span class="text-red-300 text-xs mt-1 block">{{ $message }}</span>
+            @enderror
         </div>
         
         <!-- Input Jurusan -->
@@ -29,9 +35,12 @@
                     class="block w-full rounded-lg border-none bg-[#f4f7fb] px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-[#21a650]">
                 <option value="" disabled selected>Pilih</option>
                 @foreach($majors as $major)
-                    <option value="{{ $major->id }}">{{ $major->name }}</option>
+                    <option value="{{ $major->id }}" {{ old('major_id') == $major->id ? 'selected' : '' }}>{{ $major->name }}</option>
                 @endforeach
             </select>
+            @error('major_id')
+                <span class="text-red-300 text-xs mt-1 block">{{ $message }}</span>
+            @enderror
         </div>
 
         <!-- Input Email -->
@@ -39,6 +48,9 @@
             <label for="email" class="mb-1 block text-xs font-semibold text-white drop-shadow-sm">Email</label>
             <input id="email" type="email" name="email" value="{{ old('email') }}" required
                    class="block w-full rounded-lg border-none bg-[#f4f7fb] px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#21a650]">
+            @error('email')
+                <span class="text-red-300 text-xs mt-1 block">{{ $message }}</span>
+            @enderror
         </div>
 
         <!-- Input Password -->
@@ -46,6 +58,9 @@
             <label for="password" class="mb-1 block text-xs font-semibold text-white drop-shadow-sm">Password</label>
             <input id="password" type="password" name="password" required
                    class="block w-full rounded-lg border-none bg-[#f4f7fb] px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#21a650]">
+            @error('password')
+                <span class="text-red-300 text-xs mt-1 block">{{ $message }}</span>
+            @enderror
         </div>
         
         <!-- Konfirmasi Password -->

@@ -120,7 +120,16 @@ class JournalController extends Controller
     public function editMonitoring($id)
     {
         $journal = Journal::where('id', $id)->where('student_id', Auth::user()->student->id)->firstOrFail();
-        $monitoringAssessments = Assessment::where('category', 'monitoring')->orderBy('order_number')->get();
+        
+        // 1. Ambil ID Jurusan
+        $majorId = Auth::user()->student->major_id;
+        
+        // 2. Tambahkan filter ->where('major_id', $majorId)
+        $monitoringAssessments = Assessment::where('major_id', $majorId)
+                                           ->where('category', 'monitoring')
+                                           ->orderBy('order_number')
+                                           ->get();
+                                           
         $existingAnswers = JournalAssessment::where('journal_id', $journal->id)
                                             ->whereIn('assessment_id', $monitoringAssessments->pluck('id'))
                                             ->get()->keyBy('assessment_id');

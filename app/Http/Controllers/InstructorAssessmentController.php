@@ -17,11 +17,14 @@ class InstructorAssessmentController extends Controller
                           ->where('student_id', Auth::user()->student->id)
                           ->firstOrFail();
 
-        // Ambil Data Master Penilaian berdasarkan Kategori
-        $obsPoints = Assessment::where('category', 'observation_point')->with('children')->orderBy('order_number')->get();
-        $gradeTechs = Assessment::where('category', 'grade_technical')->orderBy('order_number')->get();
-        $gradeCustoms = Assessment::where('category', 'grade_custom')->orderBy('order_number')->get();
-        $gradeNonTechs = Assessment::where('category', 'grade_non_technical')->orderBy('order_number')->get();
+        // 1. Ambil ID Jurusan milik siswa yang sedang login
+        $majorId = Auth::user()->student->major_id;
+
+        // 2. Tambahkan filter ->where('major_id', $majorId) ke setiap query
+        $obsPoints = Assessment::where('major_id', $majorId)->where('category', 'observation_point')->with('children')->orderBy('order_number')->get();
+        $gradeTechs = Assessment::where('major_id', $majorId)->where('category', 'grade_technical')->orderBy('order_number')->get();
+        $gradeCustoms = Assessment::where('major_id', $majorId)->where('category', 'grade_custom')->orderBy('order_number')->get();
+        $gradeNonTechs = Assessment::where('major_id', $majorId)->where('category', 'grade_non_technical')->orderBy('order_number')->get();
 
         // Ambil Jawaban/Nilai yang sudah tersimpan (jika ada)
         $existing = JournalAssessment::where('journal_id', $journal->id)->get()->keyBy('assessment_id');

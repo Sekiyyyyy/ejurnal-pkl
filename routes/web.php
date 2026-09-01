@@ -46,6 +46,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/template', [App\Http\Controllers\Admin\TemplateController::class, 'store'])->name('templates.store');
     Route::put('/template/{id}/activate', [App\Http\Controllers\Admin\TemplateController::class, 'activate'])->name('templates.activate');
     Route::delete('/template/{id}', [App\Http\Controllers\Admin\TemplateController::class, 'destroy'])->name('templates.destroy');
+
+    // Manajemen Master Penilaian per Jurusan
+    Route::get('/penilaian', [App\Http\Controllers\Admin\AssessmentController::class, 'index'])->name('assessments.index');
+    Route::post('/penilaian', [App\Http\Controllers\Admin\AssessmentController::class, 'store'])->name('assessments.store');
+
+    // 2 Baris baru untuk Edit:
+    Route::get('/penilaian/{id}/edit', [App\Http\Controllers\Admin\AssessmentController::class, 'edit'])->name('assessments.edit');
+    Route::put('/penilaian/{id}', [App\Http\Controllers\Admin\AssessmentController::class, 'update'])->name('assessments.update');
+
+    Route::delete('/penilaian/{id}', [App\Http\Controllers\Admin\AssessmentController::class, 'destroy'])->name('assessments.destroy');
 });
 
 
