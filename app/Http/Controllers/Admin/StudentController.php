@@ -82,4 +82,19 @@ class StudentController extends Controller
 
         return back()->with('success', 'Data siswa dan seluruh jurnal terkait berhasil dihapus.');
     }
+
+    public function resetPassword($id)
+    {
+        $student = \App\Models\Student::findOrFail($id);
+        
+        if ($student->user) {
+            // Reset password menjadi string "password123"
+            $student->user->update([
+                'password' => \Illuminate\Support\Facades\Hash::make('password123')
+            ]);
+            return back()->with('success', 'Password akun atas nama ' . $student->name . ' berhasil di-reset menjadi: password123');
+        }
+
+        return back()->withErrors(['error' => 'Siswa ini tidak memiliki akun login yang terhubung.']);
+    }
 }

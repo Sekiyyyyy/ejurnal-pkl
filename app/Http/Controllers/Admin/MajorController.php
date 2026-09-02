@@ -32,6 +32,28 @@ class MajorController extends Controller
         return back()->with('success', 'Jurusan baru berhasil ditambahkan!');
     }
 
+    public function edit($id)
+    {
+        $major = \App\Models\Major::findOrFail($id);
+        return view('admin.majors.edit', compact('major'));
+    }
+
+    public function update(\Illuminate\Http\Request $request, $id)
+    {
+        $request->validate([
+            'code' => 'required|string|max:50',
+            'name' => 'required|string|max:255',
+        ]);
+
+        $major = \App\Models\Major::findOrFail($id);
+        $major->update([
+            'code' => $request->code,
+            'name' => $request->name,
+        ]);
+
+        return redirect()->route('admin.majors.index')->with('success', 'Data jurusan berhasil diperbarui.');
+    }
+
     public function destroy($id)
     {
         try {

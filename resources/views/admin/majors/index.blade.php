@@ -59,11 +59,21 @@
                                     <td class="px-4 py-3 border font-bold text-gray-800">{{ $major->code }}</td>
                                     <td class="px-4 py-3 border font-medium text-gray-900">{{ $major->name }}</td>
                                     <td class="px-4 py-3 border text-center">
-                                        <form action="{{ route('admin.majors.destroy', $major->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus jurusan ini?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-800 font-semibold text-xs bg-red-100 px-2 py-1 rounded">Hapus</button>
-                                        </form>
+                                        <div class="flex justify-center gap-2">
+                                            <!-- Tombol Edit -->
+                                            <a href="{{ route('admin.majors.edit', $major->id) }}" class="text-blue-600 hover:text-blue-800 font-semibold text-xs bg-blue-100 px-3 py-1 rounded">
+                                                Edit
+                                            </a>
+                                            
+                                            <!-- Tombol Hapus -->
+                                            <form action="{{ route('admin.majors.destroy', $major->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus jurusan ini?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-800 font-semibold text-xs bg-red-100 px-3 py-1 rounded">
+                                                    Hapus
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                                 @empty

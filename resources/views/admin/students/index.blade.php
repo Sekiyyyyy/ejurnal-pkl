@@ -1,58 +1,52 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Manajemen Akun Siswa') }}
-            </h2>
-            <a href="{{ route('admin.students.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded text-sm">
-                + Tambah Siswa Baru
-            </a>
-        </div>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Manajemen Akun Siswa</h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
-            @if(session('success'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
-                    {{ session('success') }}
-                </div>
-            @endif
-
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                
+                @if(session('success')) <div class="mb-4 text-sm text-green-600 bg-green-50 p-3 rounded font-medium">{{ session('success') }}</div> @endif
+                @if($errors->any()) <div class="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded font-medium">{{ $errors->first() }}</div> @endif
+
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-gray-600 border">
+                    <table class="w-full text-sm text-left text-gray-500">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-100">
                             <tr>
-                                <th class="px-4 py-3 border text-center">No</th>
-                                <th class="px-4 py-3 border">NISN</th>
-                                <th class="px-4 py-3 border">Nama Siswa</th>
-                                <th class="px-4 py-3 border">Jurusan</th>
-                                <th class="px-4 py-3 border">Email Login</th>
-                                <th class="px-4 py-3 border text-center">Aksi</th>
+                                <th class="px-4 py-3">Nama Lengkap</th>
+                                <th class="px-4 py-3">NISN</th>
+                                <th class="px-4 py-3">Jurusan</th>
+                                <th class="px-4 py-3 text-center">Aksi (Admin)</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @forelse($students as $index => $student)
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="px-4 py-3 border text-center">{{ $index + 1 }}</td>
-                                <td class="px-4 py-3 border font-semibold">{{ $student->nisn }}</td>
-                                <td class="px-4 py-3 border">{{ $student->name }}</td>
-                                <td class="px-4 py-3 border">{{ $student->major->code ?? '-' }}</td>
-                                <td class="px-4 py-3 border">{{ optional($student->user)->email ?? '-' }}</td>
-                                <td class="px-4 py-3 border text-center">
-                                    <form action="{{ route('admin.students.destroy', $student->id) }}" method="POST" onsubmit="return confirm('Peringatan: Menghapus siswa akan menghapus seluruh data jurnalnya. Lanjutkan?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-800 font-semibold text-xs bg-red-100 px-2 py-1 rounded">Hapus</button>
+                        <tbody class="divide-y">
+                            @foreach($students as $student)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 font-bold text-gray-900">{{ $student->name }}</td>
+                                <td class="px-4 py-3">{{ $student->nisn }}</td>
+                                <td class="px-4 py-3">{{ $student->major->name ?? 'Belum ada jurusan' }}</td>
+                                <td class="px-4 py-3 flex justify-center gap-2">
+                                    
+                                    <!-- Tombol Reset Password -->
+                                    <form action="{{ route('admin.students.reset-password', $student->id) }}" method="POST" onsubmit="return confirm('Reset password akun ini menjadi: password123 ?');">
+                                        @csrf @method('PUT')
+                                        <button type="submit" class="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 px-3 py-1 rounded text-xs font-bold transition">
+                                            Reset Password
+                                        </button>
                                     </form>
+
+                                    <!-- Tombol Hapus Akun -->
+                                    <form action="{{ route('admin.students.destroy', $student->id) }}" method="POST" onsubmit="return confirm('PERINGATAN: Menghapus siswa ini juga akan menghapus seluruh data jurnal, absen, dan kegiatannya secara permanen. Yakin?');">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded text-xs font-bold transition">
+                                            Hapus Akun
+                                        </button>
+                                    </form>
+                                    
                                 </td>
                             </tr>
-                            @empty
-                            <tr>
-                                <td colspan="6" class="px-4 py-3 text-center text-gray-500">Belum ada akun siswa yang didaftarkan.</td>
-                            </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>

@@ -33,6 +33,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Manajemen Jurusan
     Route::get('/jurusan', [App\Http\Controllers\Admin\MajorController::class, 'index'])->name('majors.index');
     Route::post('/jurusan', [App\Http\Controllers\Admin\MajorController::class, 'store'])->name('majors.store');
+
+    Route::get('/jurusan/{id}/edit', [App\Http\Controllers\Admin\MajorController::class, 'edit'])->name('majors.edit');
+    Route::put('/jurusan/{id}', [App\Http\Controllers\Admin\MajorController::class, 'update'])->name('majors.update');
+
     Route::delete('/jurusan/{id}', [App\Http\Controllers\Admin\MajorController::class, 'destroy'])->name('majors.destroy');
 
     // Manajemen Akun Siswa 
@@ -40,6 +44,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/siswa/tambah', [App\Http\Controllers\Admin\StudentController::class, 'create'])->name('students.create');
     Route::post('/siswa', [App\Http\Controllers\Admin\StudentController::class, 'store'])->name('students.store');
     Route::delete('/siswa/{id}', [App\Http\Controllers\Admin\StudentController::class, 'destroy'])->name('students.destroy');
+    Route::put('/siswa/{id}/reset-password', [App\Http\Controllers\Admin\StudentController::class, 'resetPassword'])->name('students.reset-password');
 
     // Manajemen Template Word
     Route::get('/template', [App\Http\Controllers\Admin\TemplateController::class, 'index'])->name('templates.index');
