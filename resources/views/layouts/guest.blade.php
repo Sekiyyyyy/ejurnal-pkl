@@ -7,6 +7,8 @@
 
         <title>{{ config('app.name', 'E-Jurnal SMKN 1 Beringin') }}</title>
 
+        <link rel="icon" type="image/png" href="{{ asset('logo.png') }}">
+
         <!-- Font Poppins agar persis seperti gambar -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

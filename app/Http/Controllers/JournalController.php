@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Journal;
 use App\Models\Assessment;
 use App\Models\JournalAssessment;
+use App\Models\Template;
 use Illuminate\Support\Facades\Auth;
 
 class JournalController extends Controller
