@@ -12,6 +12,12 @@ class ExportController extends Controller
 {
     public function exportDocx($id)
     {
+        $template = \App\Models\Template::where('is_active', true)->first();
+        
+        if (!$template) {
+            return back()->withErrors(['error' => 'Akses ditolak. Template jurnal belum diaktifkan oleh Admin.']);
+        }
+        
         $journal = Journal::where('id', $id)
                             ->where('student_id', Auth::user()->student->id)
                             ->with(['student.major', 'dailyActivities', 'attendances', 'assessments.assessment'])
