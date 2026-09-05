@@ -7,7 +7,10 @@ use App\Models\Journal;
 use App\Models\Assessment;
 use App\Models\JournalAssessment;
 use App\Models\Template;
+use App\Models\WeeklyApproval;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class JournalController extends Controller
 {
@@ -45,14 +48,21 @@ class JournalController extends Controller
         $isDataPklFilled = !empty($journal->company_name) && !empty($journal->company_address) && !empty($journal->start_date) && !empty($journal->end_date) && !empty($journal->instructor_name) && !empty($journal->teacher_name);
 
         $isDailyFilled = false;
+        $isDailyApproved = false;
         if ($journal->start_date && $journal->end_date) {
             $startDate = \Carbon\Carbon::parse($journal->start_date);
             $endDate = \Carbon\Carbon::parse($journal->end_date);
             $totalDays = $startDate->diffInDays($endDate) + 1;
-            $recordedDays = $journal->dailyActivities()
-                                    ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-                                    ->count();
+            
+            $activities = $journal->dailyActivities()
+                                  ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+                                  ->get();
+                                  
+            $recordedDays = $activities->count();
+            $approvedDays = $activities->where('is_approved', true)->count();
+            
             $isDailyFilled = ($recordedDays >= $totalDays && $totalDays > 0);
+            $isDailyApproved = ($approvedDays >= $totalDays && $totalDays > 0);
         }
 
         $majorId = $student->major_id;
@@ -86,7 +96,7 @@ class JournalController extends Controller
         // Pass variabel hitungan agar View bisa menampilkan (1/6) dll
         return view('student.journal.show', compact(
             'journal', 'progress', 
-            'isProfileFilled', 'isDataPklFilled', 'isDailyFilled', 
+            'isProfileFilled', 'isDataPklFilled', 'isDailyFilled', 'isDailyApproved',
             'isMonitoringFilled', 'isPenilaianFilled', 'isTtdFilled',
             'hasActiveTemplate',
             'answeredMonitoringCount', 'totalMonitoringCriteria',
@@ -100,14 +110,21 @@ class JournalController extends Controller
         $isDataPklFilled = !empty($journal->company_name) && !empty($journal->company_address) && !empty($journal->start_date) && !empty($journal->end_date) && !empty($journal->instructor_name) && !empty($journal->teacher_name);
 
         $isDailyFilled = false;
+        $isDailyApproved = false;
         if ($journal->start_date && $journal->end_date) {
             $startDate = \Carbon\Carbon::parse($journal->start_date);
             $endDate = \Carbon\Carbon::parse($journal->end_date);
             $totalDays = $startDate->diffInDays($endDate) + 1;
-            $recordedDays = $journal->dailyActivities()
-                                    ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-                                    ->count();
+            
+            $activities = $journal->dailyActivities()
+                                  ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+                                  ->get();
+                                  
+            $recordedDays = $activities->count();
+            $approvedDays = $activities->where('is_approved', true)->count();
+            
             $isDailyFilled = ($recordedDays >= $totalDays && $totalDays > 0);
+            $isDailyApproved = ($approvedDays >= $totalDays && $totalDays > 0);
         }
 
         $majorId = $student->major_id;
@@ -231,5 +248,86 @@ class JournalController extends Controller
         
         if(!empty($data)) { $journal->update($data); }
         return back()->with('success', 'Tanda tangan berhasil disimpan.');
+    }
+
+    // --- ACC MINGGUAN ---
+    public function weeklyApprovalShow($id, Request $request)
+    {
+        $journal = Journal::where('id', $id)->where('student_id', Auth::user()->student->id)->firstOrFail();
+        
+        // Use ISO week number (1-53) and Year based on current date or selected date.
+        // For simplicity, we just fetch unapproved activities and group them by week.
+        $unapprovedActivities = $journal->dailyActivities()->where('is_approved', false)->orderBy('date', 'asc')->get();
+        
+        if ($unapprovedActivities->isEmpty()) {
+            return redirect()->route('journal.show', $journal->id)->with('success', 'Semua logbook sudah di-ACC.');
+        }
+
+        // Group by week-year string (e.g., "42-2026")
+        $groupedActivities = $unapprovedActivities->groupBy(function($date) {
+            return \Carbon\Carbon::parse($date->date)->format('W-Y');
+        });
+
+        // Get the first group to approve
+        $currentWeekGroup = $groupedActivities->keys()->first();
+        $activitiesToApprove = $groupedActivities[$currentWeekGroup];
+        
+        $weekNumber = explode('-', $currentWeekGroup)[0];
+        $year = explode('-', $currentWeekGroup)[1];
+
+        return view('student.journal.weekly-approval', compact('journal', 'activitiesToApprove', 'weekNumber', 'year'));
+    }
+
+    public function weeklyApprovalStore(Request $request, $id)
+    {
+        $journal = Journal::where('id', $id)->where('student_id', Auth::user()->student->id)->firstOrFail();
+        
+        $request->validate([
+            'week_number' => 'required|integer',
+            'year' => 'required|integer',
+            'signature_base64' => 'required|string',
+            'live_photo_base64' => 'required|string',
+        ]);
+
+        $signaturePath = $this->saveBase64Image($request->signature_base64, 'signatures');
+        $photoPath = $this->saveBase64Image($request->live_photo_base64, 'live_photos');
+
+        // Create Weekly Approval Record
+        WeeklyApproval::create([
+            'journal_id' => $journal->id,
+            'week_number' => $request->week_number,
+            'year' => $request->year,
+            'instructor_paraf' => $signaturePath,
+            'instructor_live_photo' => $photoPath,
+            'approved_at' => now(),
+        ]);
+
+        // Update Daily Activities for that week to is_approved = true
+        $activities = $journal->dailyActivities()->where('is_approved', false)->get()->filter(function($activity) use ($request) {
+            $date = \Carbon\Carbon::parse($activity->date);
+            return $date->format('W') == $request->week_number && $date->format('Y') == $request->year;
+        });
+
+        foreach($activities as $activity) {
+            $activity->update(['is_approved' => true]);
+        }
+
+        return redirect()->route('journal.show', $journal->id)->with('success', 'Logbook mingguan berhasil di-ACC oleh Instruktur.');
+    }
+
+    private function saveBase64Image($base64String, $folder)
+    {
+        $image_parts = explode(";base64,", $base64String);
+        if (count($image_parts) != 2) return null;
+        
+        $image_type_aux = explode("image/", $image_parts[0]);
+        $image_type = $image_type_aux[1] ?? 'png';
+        
+        $image_base64 = base64_decode($image_parts[1]);
+        $fileName = $folder . '/' . Str::random(40) . '.' . $image_type;
+        
+        Storage::disk('public')->put($fileName, $image_base64);
+        
+        return $fileName;
     }
 }

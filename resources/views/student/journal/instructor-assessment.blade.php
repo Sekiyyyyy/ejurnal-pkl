@@ -12,11 +12,20 @@
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 
-                <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
-                    <strong>Pemberitahuan:</strong> Halaman ini diisi secara langsung oleh <strong>Instruktur / Penanggung Jawab DUDI</strong>.
+                @php
+                    $isLocked = in_array($journal->status, ['COMPLETED', 'READY_TO_GENERATE', 'GENERATED']);
+                @endphp
+
+                <div class="mb-6 p-4 {{ $isLocked ? 'bg-yellow-50 border-yellow-200 text-yellow-800' : 'bg-blue-50 border-blue-200 text-blue-800' }} border rounded text-sm">
+                    <strong>Pemberitahuan:</strong> 
+                    @if($isLocked)
+                        Penilaian ini sudah <strong>dikunci permanen</strong> karena telah disubmit oleh Instruktur.
+                    @else
+                        Halaman ini diisi secara langsung oleh <strong>Instruktur / Penanggung Jawab DUDI</strong>.
+                    @endif
                 </div>
 
-                <form action="{{ route('journal.update-instructor-assessment', $journal->id) }}" method="POST">
+                <form id="form-assessment" action="{{ route('journal.update-instructor-assessment', $journal->id) }}" method="POST">
                     @csrf
                     
                     <!-- BAGIAN 1: OBSERVASI -->
@@ -44,7 +53,7 @@
                                                     <input type="text" name="obs_custom_name[{{ $child->id }}]" 
                                                         value="{{ old('obs_custom_name.'.$child->id, optional($existing[$child->id] ?? null)->description) }}" 
                                                         placeholder="Isi nama kompetensi teknis..." 
-                                                        class="w-full text-sm border-gray-300 rounded">
+                                                        class="w-full text-sm border-gray-300 rounded" {{ $isLocked ? 'disabled' : '' }}>
                                                 @else
                                                     {{ $child->name }}
                                                 @endif
@@ -53,13 +62,13 @@
                                                 <!-- Radio Button Ya -->
                                                 <input type="radio" name="obs_yes[{{ $child->id }}]" value="1" 
                                                     {{ old('obs_yes.'.$child->id, optional($existing[$child->id] ?? null)->is_yes) == '1' ? 'checked' : '' }} 
-                                                    class="text-indigo-600">
+                                                    class="text-indigo-600" {{ $isLocked ? 'disabled' : '' }}>
                                             </td>
                                             <td class="p-2 text-center">
                                                 <!-- Radio Button Tidak -->
                                                 <input type="radio" name="obs_yes[{{ $child->id }}]" value="0" 
                                                     {{ old('obs_yes.'.$child->id, optional($existing[$child->id] ?? null)->is_yes) == '0' ? 'checked' : '' }} 
-                                                    class="text-indigo-600">
+                                                    class="text-indigo-600" {{ $isLocked ? 'disabled' : '' }}>
                                             </td>
                                         </tr>
                                         @endforeach
@@ -69,7 +78,7 @@
                                 <!-- Deskripsi Kesimpulan Observasi -->
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-1">Deskripsi & Catatan (Terkait {{ $point->name }})</label>
-                                    <textarea name="obs_desc[{{ $point->id }}]" rows="2" class="w-full border-gray-300 rounded text-sm" placeholder="Peserta didik sudah... namun perlu ditingkatkan dalam hal...">{{ optional($existing[$point->id] ?? null)->description }}</textarea>
+                                    <textarea name="obs_desc[{{ $point->id }}]" rows="2" class="w-full border-gray-300 rounded text-sm" placeholder="Peserta didik sudah... namun perlu ditingkatkan dalam hal..." {{ $isLocked ? 'disabled' : '' }}>{{ optional($existing[$point->id] ?? null)->description }}</textarea>
                                 </div>
                             </div>
                         @endforeach
@@ -83,7 +92,7 @@
                                 <label class="text-sm font-medium text-gray-800 block mb-2">{{ $index + 1 }}. {{ $tech->name }}</label>
                                 <div class="flex items-center">
                                     <span class="text-sm mr-2 text-gray-600">Nilai (0-100):</span>
-                                    <input type="number" name="grade[{{ $tech->id }}]" min="0" max="100" class="border-gray-300 rounded w-24 text-sm" value="{{ optional($existing[$tech->id] ?? null)->score }}">
+                                    <input type="number" name="grade[{{ $tech->id }}]" min="0" max="100" class="border-gray-300 rounded w-24 text-sm" value="{{ optional($existing[$tech->id] ?? null)->score }}" {{ $isLocked ? 'disabled' : '' }}>
                                 </div>
                             </div>
                         @endforeach
@@ -96,8 +105,8 @@
                         @foreach($gradeCustoms as $index => $custom)
                             <div class="flex flex-col sm:flex-row items-center gap-3">
                                 <span class="text-sm font-medium text-gray-500 w-6">{{ $index + 1 }}.</span>
-                                <input type="text" name="custom_name[{{ $custom->id }}]" class="border-gray-300 rounded w-full sm:w-2/3 text-sm" placeholder="Nama Kompetensi (Misal: Setting Mikrotik)" value="{{ optional($existing[$custom->id] ?? null)->description }}">
-                                <input type="number" name="custom_grade[{{ $custom->id }}]" min="0" max="100" class="border-gray-300 rounded w-full sm:w-1/3 text-sm" placeholder="Nilai (0-100)" value="{{ optional($existing[$custom->id] ?? null)->score }}">
+                                <input type="text" name="custom_name[{{ $custom->id }}]" class="border-gray-300 rounded w-full sm:w-2/3 text-sm" placeholder="Nama Kompetensi (Misal: Setting Mikrotik)" value="{{ optional($existing[$custom->id] ?? null)->description }}" {{ $isLocked ? 'disabled' : '' }}>
+                                <input type="number" name="custom_grade[{{ $custom->id }}]" min="0" max="100" class="border-gray-300 rounded w-full sm:w-1/3 text-sm" placeholder="Nilai (0-100)" value="{{ optional($existing[$custom->id] ?? null)->score }}" {{ $isLocked ? 'disabled' : '' }}>
                             </div>
                         @endforeach
                     </div>
@@ -108,16 +117,40 @@
                         @foreach($gradeNonTechs as $index => $nonTech)
                             <div class="flex items-center justify-between border-b pb-2">
                                 <label class="text-sm font-medium text-gray-800">{{ $index + 1 }}. {{ $nonTech->name }}</label>
-                                <input type="number" name="grade[{{ $nonTech->id }}]" min="0" max="100" class="border-gray-300 rounded w-20 text-sm ml-2" placeholder="Nilai" value="{{ optional($existing[$nonTech->id] ?? null)->score }}">
+                                <input type="number" name="grade[{{ $nonTech->id }}]" min="0" max="100" class="border-gray-300 rounded w-20 text-sm ml-2" placeholder="Nilai" value="{{ optional($existing[$nonTech->id] ?? null)->score }}" {{ $isLocked ? 'disabled' : '' }}>
                             </div>
                         @endforeach
                     </div>
 
-                    <div class="border-t pt-4 flex justify-end">
-                        <x-primary-button class="text-lg px-6 py-3 bg-rose-600 hover:bg-rose-700">
-                            Simpan Seluruh Penilaian
-                        </x-primary-button>
-                    </div>
+                    @if($isLocked)
+                        <h3 class="text-lg font-bold text-gray-900 border-b pb-2 mb-4">E. Bukti Pengesahan Instruktur</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            @if($journal->instructor_signature)
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tanda Tangan Instruktur</label>
+                                <img src="{{ asset('storage/' . $journal->instructor_signature) }}" alt="Tanda Tangan" class="border rounded max-h-48">
+                            </div>
+                            @endif
+                            @if($journal->instructor_live_photo)
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Foto Live Instruktur</label>
+                                <img src="{{ asset('storage/' . $journal->instructor_live_photo) }}" alt="Foto Live" class="border rounded max-h-64 object-cover">
+                            </div>
+                            @endif
+                        </div>
+                    @else
+                        <!-- BAGIAN 5: LIVE AUTHENTICATOR -->
+                        <div class="mt-8 pt-4 border-t">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">E. Bukti Pengesahan Instruktur</h3>
+                            <x-live-authenticator idPrefix="final-assess" formId="form-assessment" />
+                        </div>
+
+                        <div class="border-t pt-4 flex justify-end">
+                            <x-primary-button class="text-lg px-6 py-3 bg-rose-600 hover:bg-rose-700">
+                                Kunci & Submit Penilaian
+                            </x-primary-button>
+                        </div>
+                    @endif
 
                 </form>
 

@@ -43,6 +43,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/siswa', [App\Http\Controllers\Admin\StudentController::class, 'index'])->name('students.index');
     Route::get('/siswa/tambah', [App\Http\Controllers\Admin\StudentController::class, 'create'])->name('students.create');
     Route::post('/siswa', [App\Http\Controllers\Admin\StudentController::class, 'store'])->name('students.store');
+    Route::get('/siswa/{id}', [App\Http\Controllers\Admin\StudentController::class, 'show'])->name('students.show');
     Route::delete('/siswa/{id}', [App\Http\Controllers\Admin\StudentController::class, 'destroy'])->name('students.destroy');
     Route::put('/siswa/{id}/reset-password', [App\Http\Controllers\Admin\StudentController::class, 'resetPassword'])->name('students.reset-password');
 
@@ -86,6 +87,10 @@ Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
     Route::delete('/jurnal/{id}/kegiatan/{activityId}', [App\Http\Controllers\DailyActivityController::class, 'destroy'])->name('journal.delete-activity');
 
     Route::put('/jurnal/{id}/kegiatan/{activityId}/approve', [App\Http\Controllers\DailyActivityController::class, 'approve'])->name('journal.approve-activity');
+
+    // Batch ACC Mingguan
+    Route::get('/jurnal/{id}/acc-mingguan', [JournalController::class, 'weeklyApprovalShow'])->name('journal.weekly-approval.show');
+    Route::post('/jurnal/{id}/acc-mingguan', [JournalController::class, 'weeklyApprovalStore'])->name('journal.weekly-approval.store');
 
     // Tanda Tangan & Paraf
     Route::get('/jurnal/{id}/tanda-tangan', [JournalController::class, 'editSignatures'])->name('journal.signatures');

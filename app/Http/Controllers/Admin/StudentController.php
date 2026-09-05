@@ -12,11 +12,34 @@ use Illuminate\Support\Facades\DB;
 
 class StudentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Menampilkan daftar siswa beserta jurusan dan data login-nya
-        $students = Student::with(['user', 'major'])->latest()->get();
+        $query = Student::with(['user', 'major'])->latest();
+
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('nisn', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($uq) use ($search) {
+                      $uq->where('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->has('filter') && $request->filter == 'expired') {
+            $query->whereNotNull('jurnal_2_completed_at')
+                  ->where('jurnal_2_completed_at', '<', now()->subDays(90));
+        }
+
+        $students = $query->get();
         return view('admin.students.index', compact('students'));
+    }
+
+    public function show($id)
+    {
+        $student = Student::with(['user', 'major', 'journals', 'journals.dailyActivities', 'journals.assessments'])->findOrFail($id);
+        return view('admin.students.show', compact('student'));
     }
 
     public function create()
@@ -29,7 +52,7 @@ class StudentController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'nisn' => 'required|string|max:50|unique:students,nisn',
+            'nisn' => ['required', 'numeric', 'digits:10', 'unique:students,nisn'],
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8',
             'major_id' => 'required|exists:majors,id'
@@ -66,9 +89,34 @@ class StudentController extends Controller
 
         // 1. Hapus semua jurnal dan data turunannya milik siswa ini terlebih dahulu
         foreach ($student->journals as $journal) {
+            // Hapus file tanda tangan dan foto dari storage
+            $filesToDelete = [
+                $journal->student_signature,
+                $journal->parent_signature,
+                $journal->instructor_signature,
+                $journal->instructor_paraf,
+                $journal->teacher_signature,
+                $journal->kaprog_signature,
+                $journal->instructor_live_photo
+            ];
+            
+            // Hapus file dari weekly approvals
+            $weeklyApprovals = \App\Models\WeeklyApproval::where('journal_id', $journal->id)->get();
+            foreach($weeklyApprovals as $wa) {
+                $filesToDelete[] = $wa->instructor_paraf;
+                $filesToDelete[] = $wa->instructor_live_photo;
+            }
+
+            foreach($filesToDelete as $file) {
+                if($file) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($file);
+                }
+            }
+
             $journal->dailyActivities()->delete();
             $journal->attendances()->delete();
             $journal->assessments()->delete();
+            \App\Models\WeeklyApproval::where('journal_id', $journal->id)->delete();
             $journal->delete();
         }
 

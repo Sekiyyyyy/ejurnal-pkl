@@ -33,15 +33,19 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // Validasi input: NISN harus unik di tabel students
+        // Validasi input: NISN harus unik, angka, dan wajib 10 digit
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'nisn' => ['required', 'string', 'max:50', 'unique:students,nisn'],
+            'nisn' => ['required', 'numeric', 'digits:10', 'unique:students,nisn'], // <-- Diubah di sini
             'major_id' => ['required', 'exists:majors,id'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ], [
-            'nisn.unique' => 'NISN ini sudah terdaftar. Silakan login atau hubungi Admin jika Anda merasa tidak pernah mendaftar.'
+            // Pesan error kustom bahasa Indonesia
+            'nisn.required' => 'NISN wajib diisi.',
+            'nisn.numeric' => 'NISN hanya boleh berisi angka.',
+            'nisn.digits' => 'NISN harus persis 10 digit angka.',
+            'nisn.unique' => 'NISN ini sudah terdaftar. Silakan login atau hubungi Admin jika merasa tidak pernah mendaftar.'
         ]);
 
         // 1. Buat akun User
@@ -49,7 +53,7 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => User::ROLE_STUDENT,
+            'role' => 'student', // Pastikan sesuai dengan enum di database
         ]);
 
         // 2. Buat profil Student dan relasikan dengan user_id & major_id

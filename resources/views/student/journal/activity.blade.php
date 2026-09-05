@@ -93,7 +93,15 @@
                 <!-- Kolom Kanan: Tabel Riwayat -->
                 <div class="lg:col-span-2">
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <h3 class="font-bold text-lg mb-4 text-gray-800">Riwayat Kehadiran & Kegiatan Harian</h3>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-lg text-gray-800">Riwayat Kehadiran & Kegiatan Harian</h3>
+                            <a href="{{ route('journal.weekly-approval.show', $journal->id) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow-sm text-sm font-semibold inline-flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Minta ACC Mingguan
+                            </a>
+                        </div>
                         
                         <div class="overflow-x-auto">
                             <table class="w-full text-sm text-left text-gray-500">

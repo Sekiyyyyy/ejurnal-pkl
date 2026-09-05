@@ -90,11 +90,11 @@
                     </div>
                 </a>
 
-                <a href="{{ route('journal.activity', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 {{ $isDailyFilled ? 'border-green-500' : 'border-emerald-500' }}">
+                <a href="{{ route('journal.activity', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 {{ $isDailyApproved ? 'border-green-500' : ($isDailyFilled ? 'border-blue-500' : 'border-emerald-500') }}">
                     <h3 class="text-lg font-bold text-gray-900">Kehadiran & Kegiatan</h3>
                     <p class="text-sm text-gray-500 mt-1">Absensi harian dan logbook aktivitas</p>
-                    <div class="mt-3 text-sm font-semibold {{ $isDailyFilled ? 'text-green-600' : 'text-emerald-600' }}">
-                        {{ $isDailyFilled ? '✓ Sesuai periode tanggal PKL' : '⚠ Belum lengkap / kurang' }}
+                    <div class="mt-3 text-sm font-semibold {{ $isDailyApproved ? 'text-green-600' : ($isDailyFilled ? 'text-blue-600' : 'text-emerald-600') }}">
+                        {{ $isDailyApproved ? '✓ Telah di-ACC sepenuhnya' : ($isDailyFilled ? '✓ Sesuai periode (Menunggu ACC)' : '⚠ Belum lengkap / kurang') }}
                     </div>
                 </a>
 

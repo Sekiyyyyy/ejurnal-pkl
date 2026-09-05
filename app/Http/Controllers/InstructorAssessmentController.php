@@ -7,6 +7,8 @@ use App\Models\Journal;
 use App\Models\Assessment;
 use App\Models\JournalAssessment;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class InstructorAssessmentController extends Controller
 {
@@ -40,6 +42,10 @@ class InstructorAssessmentController extends Controller
         $journal = Journal::where('id', $id)
                           ->where('student_id', Auth::user()->student->id)
                           ->firstOrFail();
+
+        if ($journal->status === 'COMPLETED' || $journal->status === 'READY_TO_GENERATE' || $journal->status === 'GENERATED') {
+            return redirect()->route('journal.show', $journal->id)->withErrors(['access' => 'Form Penilaian Akhir sudah dikunci (Read-Only) karena sudah disubmit.']);
+        }
 
         // 1. Menyimpan Observasi (Sub poin Ya/Tidak & Teks Khusus Poin 3)
         $allObsKeys = array_unique(array_merge(
@@ -97,6 +103,45 @@ class InstructorAssessmentController extends Controller
             }
         }
 
-        return redirect()->route('journal.show', $journal->id)->with('success', 'Penilaian Instruktur berhasil disimpan.');
+        // 5. Simpan Tanda Tangan & Live Photo
+        $request->validate([
+            'signature_base64' => 'required|string',
+            'live_photo_base64' => 'required|string',
+        ]);
+
+        $signaturePath = $this->saveBase64Image($request->signature_base64, 'signatures');
+        $photoPath = $this->saveBase64Image($request->live_photo_base64, 'live_photos');
+
+        $journal->update([
+            'instructor_signature' => $signaturePath,
+            'instructor_live_photo' => $photoPath,
+            'status' => 'COMPLETED'
+        ]);
+
+        // 6. Update completion date in students table
+        $student = $journal->student;
+        if ($journal->phase == 1) {
+            $student->update(['jurnal_1_completed_at' => now()]);
+        } else if ($journal->phase == 2) {
+            $student->update(['jurnal_2_completed_at' => now()]);
+        }
+
+        return redirect()->route('journal.show', $journal->id)->with('success', 'Penilaian Akhir berhasil disubmit secara permanen.');
+    }
+
+    private function saveBase64Image($base64String, $folder)
+    {
+        $image_parts = explode(";base64,", $base64String);
+        if (count($image_parts) != 2) return null;
+        
+        $image_type_aux = explode("image/", $image_parts[0]);
+        $image_type = $image_type_aux[1] ?? 'png';
+        
+        $image_base64 = base64_decode($image_parts[1]);
+        $fileName = $folder . '/' . Str::random(40) . '.' . $image_type;
+        
+        Storage::disk('public')->put($fileName, $image_base64);
+        
+        return $fileName;
     }
 }

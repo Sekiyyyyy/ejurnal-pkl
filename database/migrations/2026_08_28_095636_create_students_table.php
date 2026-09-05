@@ -32,6 +32,10 @@ return new class extends Migration
             $table->text('parent_address')->nullable();
             $table->string('parent_phone')->nullable();
             
+            // TAMBAHAN BARU: Timestamp untuk pelacakan Jurnal dan Filter 3 Bulan
+            $table->timestamp('jurnal_1_completed_at')->nullable();
+            $table->timestamp('jurnal_2_completed_at')->nullable();
+            
             $table->timestamps();
         });
     }
