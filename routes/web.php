@@ -46,6 +46,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/siswa/{id}', [App\Http\Controllers\Admin\StudentController::class, 'show'])->name('students.show');
     Route::delete('/siswa/{id}', [App\Http\Controllers\Admin\StudentController::class, 'destroy'])->name('students.destroy');
     Route::put('/siswa/{id}/reset-password', [App\Http\Controllers\Admin\StudentController::class, 'resetPassword'])->name('students.reset-password');
+    Route::put('/siswa/{student_id}/reset-journal/{journal_id}', [App\Http\Controllers\Admin\StudentController::class, 'resetJournal'])->name('students.reset-journal');
 
     // Manajemen Template Word
     Route::get('/template', [App\Http\Controllers\Admin\TemplateController::class, 'index'])->name('templates.index');

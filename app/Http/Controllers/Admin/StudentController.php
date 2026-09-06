@@ -38,7 +38,15 @@ class StudentController extends Controller
 
     public function show($id)
     {
-        $student = Student::with(['user', 'major', 'journals', 'journals.dailyActivities', 'journals.assessments'])->findOrFail($id);
+        $student = Student::with([
+            'user', 
+            'major', 
+            'journals', 
+            'journals.dailyActivities', 
+            'journals.assessments',
+            'journals.weeklyApprovals'
+        ])->findOrFail($id);
+        
         return view('admin.students.show', compact('student'));
     }
 
@@ -97,7 +105,8 @@ class StudentController extends Controller
                 $journal->instructor_paraf,
                 $journal->teacher_signature,
                 $journal->kaprog_signature,
-                $journal->instructor_live_photo
+                $journal->instructor_live_photo,
+                $journal->teacher_live_photo
             ];
             
             // Hapus file dari weekly approvals
@@ -144,5 +153,57 @@ class StudentController extends Controller
         }
 
         return back()->withErrors(['error' => 'Siswa ini tidak memiliki akun login yang terhubung.']);
+    }
+
+    public function resetJournal($student_id, $journal_id)
+    {
+        $journal = \App\Models\Journal::where('student_id', $student_id)->findOrFail($journal_id);
+
+        $filesToDelete = [
+            $journal->student_signature,
+            $journal->parent_signature,
+            $journal->instructor_signature,
+            $journal->instructor_paraf,
+            $journal->teacher_signature,
+            $journal->kaprog_signature,
+            $journal->instructor_live_photo,
+            $journal->teacher_live_photo,
+        ];
+
+        $weeklyApprovals = \App\Models\WeeklyApproval::where('journal_id', $journal->id)->get();
+        foreach($weeklyApprovals as $wa) {
+            $filesToDelete[] = $wa->instructor_paraf;
+            $filesToDelete[] = $wa->instructor_live_photo;
+        }
+
+        foreach($filesToDelete as $file) {
+            if($file) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($file);
+            }
+        }
+
+        // Hapus data turunan tapi biarkan Jurnal dan logbook hariannya?
+        // Wait, the user said "reset progress, biar pas aku testing enak".
+        // Menghapus data logbook (daily activities) juga akan mereset semuanya ke awal.
+        $journal->dailyActivities()->delete();
+        $journal->attendances()->delete();
+        $journal->assessments()->delete();
+        \App\Models\WeeklyApproval::where('journal_id', $journal->id)->delete();
+
+        $journal->update([
+            'student_signature' => null,
+            'parent_signature' => null,
+            'instructor_signature' => null,
+            'instructor_paraf' => null,
+            'teacher_signature' => null,
+            'kaprog_signature' => null,
+            'instructor_live_photo' => null,
+            'teacher_live_photo' => null,
+            'monitoring_locked_at' => null,
+            'status' => 'DRAFT',
+            'grade_pdf_path' => null,
+        ]);
+
+        return back()->with('success', 'Seluruh progress Jurnal PKL Tahap '.$journal->phase.' berhasil di-reset ke kondisi awal (termasuk foto/TTD di storage).');
     }
 }

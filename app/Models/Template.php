@@ -20,4 +20,13 @@ class Template extends Model
     {
         return $this->belongsTo(Major::class);
     }
+
+    protected static function booted()
+    {
+        static::deleting(function ($template) {
+            if ($template->file_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($template->file_path)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($template->file_path);
+            }
+        });
+    }
 }

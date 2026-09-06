@@ -60,13 +60,13 @@
                                             </td>
                                             <td class="p-2 text-center">
                                                 <!-- Radio Button Ya -->
-                                                <input type="radio" name="obs_yes[{{ $child->id }}]" value="1" 
+                                                <input type="radio" name="obs_yes[{{ $child->id }}]" value="1" required
                                                     {{ old('obs_yes.'.$child->id, optional($existing[$child->id] ?? null)->is_yes) == '1' ? 'checked' : '' }} 
                                                     class="text-indigo-600" {{ $isLocked ? 'disabled' : '' }}>
                                             </td>
                                             <td class="p-2 text-center">
                                                 <!-- Radio Button Tidak -->
-                                                <input type="radio" name="obs_yes[{{ $child->id }}]" value="0" 
+                                                <input type="radio" name="obs_yes[{{ $child->id }}]" value="0" required
                                                     {{ old('obs_yes.'.$child->id, optional($existing[$child->id] ?? null)->is_yes) == '0' ? 'checked' : '' }} 
                                                     class="text-indigo-600" {{ $isLocked ? 'disabled' : '' }}>
                                             </td>
@@ -78,7 +78,7 @@
                                 <!-- Deskripsi Kesimpulan Observasi -->
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-1">Deskripsi & Catatan (Terkait {{ $point->name }})</label>
-                                    <textarea name="obs_desc[{{ $point->id }}]" rows="2" class="w-full border-gray-300 rounded text-sm" placeholder="Peserta didik sudah... namun perlu ditingkatkan dalam hal..." {{ $isLocked ? 'disabled' : '' }}>{{ optional($existing[$point->id] ?? null)->description }}</textarea>
+                                    <textarea name="obs_desc[{{ $point->id }}]" rows="2" required class="w-full border-gray-300 rounded text-sm" placeholder="Peserta didik sudah... namun perlu ditingkatkan dalam hal..." {{ $isLocked ? 'disabled' : '' }}>{{ optional($existing[$point->id] ?? null)->description }}</textarea>
                                 </div>
                             </div>
                         @endforeach
@@ -92,7 +92,7 @@
                                 <label class="text-sm font-medium text-gray-800 block mb-2">{{ $index + 1 }}. {{ $tech->name }}</label>
                                 <div class="flex items-center">
                                     <span class="text-sm mr-2 text-gray-600">Nilai (0-100):</span>
-                                    <input type="number" name="grade[{{ $tech->id }}]" min="0" max="100" class="border-gray-300 rounded w-24 text-sm" value="{{ optional($existing[$tech->id] ?? null)->score }}" {{ $isLocked ? 'disabled' : '' }}>
+                                    <input type="number" name="grade[{{ $tech->id }}]" min="0" max="100" required class="border-gray-300 rounded w-24 text-sm" value="{{ optional($existing[$tech->id] ?? null)->score }}" {{ $isLocked ? 'disabled' : '' }}>
                                 </div>
                             </div>
                         @endforeach
@@ -117,7 +117,7 @@
                         @foreach($gradeNonTechs as $index => $nonTech)
                             <div class="flex items-center justify-between border-b pb-2">
                                 <label class="text-sm font-medium text-gray-800">{{ $index + 1 }}. {{ $nonTech->name }}</label>
-                                <input type="number" name="grade[{{ $nonTech->id }}]" min="0" max="100" class="border-gray-300 rounded w-20 text-sm ml-2" placeholder="Nilai" value="{{ optional($existing[$nonTech->id] ?? null)->score }}" {{ $isLocked ? 'disabled' : '' }}>
+                                <input type="number" name="grade[{{ $nonTech->id }}]" min="0" max="100" required class="border-gray-300 rounded w-20 text-sm ml-2" placeholder="Nilai" value="{{ optional($existing[$nonTech->id] ?? null)->score }}" {{ $isLocked ? 'disabled' : '' }}>
                             </div>
                         @endforeach
                     </div>

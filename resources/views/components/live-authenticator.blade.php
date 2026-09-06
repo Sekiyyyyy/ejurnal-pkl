@@ -9,8 +9,8 @@
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tanda Tangan / Paraf</label>
             <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 overflow-hidden touch-none relative">
                 <canvas id="{{ $idPrefix }}-signature-pad" class="w-full h-48 cursor-crosshair"></canvas>
-                <div class="absolute top-2 right-2 flex space-x-2">
-                    <button type="button" id="{{ $idPrefix }}-clear-signature" class="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded shadow">Hapus</button>
+                <div class="absolute top-2 right-2 flex space-x-2 z-10">
+                    <button type="button" id="{{ $idPrefix }}-clear-signature" class="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded shadow">Ulang</button>
                 </div>
             </div>
             <input type="hidden" name="signature_base64" id="{{ $idPrefix }}-signature-input" required>

@@ -87,7 +87,7 @@ class JournalController extends Controller
         $answeredPenilaianCount = JournalAssessment::where('journal_id', $journal->id)->whereIn('assessment_id', $penilaianTargetIds)->count();
         $isPenilaianFilled = ($totalPenilaianCriteria > 0 && $answeredPenilaianCount >= $totalPenilaianCriteria);
 
-        $isTtdFilled = !empty($journal->student_signature) && !empty($journal->parent_signature) && !empty($journal->instructor_signature) && !empty($journal->instructor_paraf) && !empty($journal->teacher_signature) && !empty($journal->kaprog_signature);
+        $isTtdFilled = !empty($journal->student_signature) && !empty($journal->parent_signature) && !empty($journal->kaprog_signature);
 
         $hasActiveTemplate = Template::where('major_id', $student->major_id)
                                     ->where('is_active', true)
@@ -147,7 +147,7 @@ class JournalController extends Controller
         $answeredPenilaianCount = JournalAssessment::where('journal_id', $journal->id)->whereIn('assessment_id', $penilaianTargetIds)->count();
         $isPenilaianFilled = ($penilaianTargetIds->count() > 0 && $answeredPenilaianCount >= $penilaianTargetIds->count());
         
-        $isTtdFilled = !empty($journal->student_signature) && !empty($journal->parent_signature) && !empty($journal->instructor_signature) && !empty($journal->instructor_paraf) && !empty($journal->teacher_signature) && !empty($journal->kaprog_signature);
+        $isTtdFilled = !empty($journal->student_signature) && !empty($journal->parent_signature) && !empty($journal->kaprog_signature);
 
         $progress = 0;
         if ($isProfileFilled) $progress += 15;
@@ -210,13 +210,34 @@ class JournalController extends Controller
     public function updateMonitoring(Request $request, $id)
     {
         $journal = Journal::where('id', $id)->where('student_id', Auth::user()->student->id)->firstOrFail();
+        
+        // Prevent updates if already locked
+        if ($journal->monitoring_locked_at) {
+            return redirect()->route('journal.show', $journal->id)->withErrors(['access' => 'Form Monitoring Guru sudah terkunci dan tidak dapat diubah lagi.']);
+        }
+
+        $request->validate([
+            'signature_base64' => 'required|string',
+            'live_photo_base64' => 'required|string',
+        ]);
+
         foreach ($request->monitoring ?? [] as $assessmentId => $isYes) {
             JournalAssessment::updateOrCreate(
                 ['journal_id' => $journal->id, 'assessment_id' => $assessmentId],
                 ['is_yes' => $isYes]
             );
         }
-        return redirect()->route('journal.show', $journal->id)->with('success', 'Monitoring Guru berhasil disimpan.');
+
+        $signaturePath = $this->saveBase64Image($request->signature_base64, 'signatures');
+        $photoPath = $this->saveBase64Image($request->live_photo_base64, 'live_photos');
+
+        $journal->update([
+            'teacher_signature' => $signaturePath,
+            'teacher_live_photo' => $photoPath,
+            'monitoring_locked_at' => now(),
+        ]);
+
+        return redirect()->route('journal.show', $journal->id)->with('success', 'Monitoring Guru berhasil disimpan secara permanen.');
     }
 
     // Menampilkan Form Upload Tanda Tangan
@@ -231,20 +252,31 @@ class JournalController extends Controller
     {
         $journal = Journal::where('id', $id)->where('student_id', Auth::user()->student->id)->firstOrFail();
         $request->validate([
-            'student_signature' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
-            'parent_signature' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
-            'instructor_signature' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
-            'instructor_paraf' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
-            'teacher_signature' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
-            'kaprog_signature' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
+            'student_signature' => 'nullable|string',
+            'parent_signature' => 'nullable|string',
+            'kaprog_signature' => 'nullable|string',
         ]);
+        
         $data = [];
-        if ($request->hasFile('student_signature')) $data['student_signature'] = $request->file('student_signature')->store('signatures', 'public');
-        if ($request->hasFile('parent_signature')) $data['parent_signature'] = $request->file('parent_signature')->store('signatures', 'public');
-        if ($request->hasFile('instructor_signature')) $data['instructor_signature'] = $request->file('instructor_signature')->store('signatures', 'public');
-        if ($request->hasFile('instructor_paraf')) $data['instructor_paraf'] = $request->file('instructor_paraf')->store('signatures', 'public');
-        if ($request->hasFile('teacher_signature')) $data['teacher_signature'] = $request->file('teacher_signature')->store('signatures', 'public');
-        if ($request->hasFile('kaprog_signature')) $data['kaprog_signature'] = $request->file('kaprog_signature')->store('signatures', 'public');
+        
+        if ($request->filled('student_signature')) {
+            if ($journal->student_signature && \Illuminate\Support\Facades\Storage::disk('public')->exists($journal->student_signature)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($journal->student_signature);
+            }
+            $data['student_signature'] = $this->saveBase64Image($request->student_signature, 'signatures');
+        }
+        if ($request->filled('parent_signature')) {
+            if ($journal->parent_signature && \Illuminate\Support\Facades\Storage::disk('public')->exists($journal->parent_signature)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($journal->parent_signature);
+            }
+            $data['parent_signature'] = $this->saveBase64Image($request->parent_signature, 'signatures');
+        }
+        if ($request->filled('kaprog_signature')) {
+            if ($journal->kaprog_signature && \Illuminate\Support\Facades\Storage::disk('public')->exists($journal->kaprog_signature)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($journal->kaprog_signature);
+            }
+            $data['kaprog_signature'] = $this->saveBase64Image($request->kaprog_signature, 'signatures');
+        }
         
         if(!empty($data)) { $journal->update($data); }
         return back()->with('success', 'Tanda tangan berhasil disimpan.');

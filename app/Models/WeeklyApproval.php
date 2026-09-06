@@ -18,4 +18,20 @@ class WeeklyApproval extends Model
     {
         return $this->belongsTo(Journal::class);
     }
+
+    protected static function booted()
+    {
+        static::deleting(function ($approval) {
+            $filesToDelete = [
+                $approval->instructor_paraf,
+                $approval->instructor_live_photo,
+            ];
+
+            foreach ($filesToDelete as $file) {
+                if ($file && \Illuminate\Support\Facades\Storage::disk('public')->exists($file)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($file);
+                }
+            }
+        });
+    }
 }
