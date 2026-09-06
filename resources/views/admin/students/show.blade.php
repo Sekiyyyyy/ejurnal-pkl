@@ -11,7 +11,15 @@
         </div>
     </x-slot>
 
-    <div class="py-12" x-data="{ activeTab: 'biodata', modalOpen: false, modalImgSignature: '', modalImgLive: '', modalDate: '' }">
+    <div class="py-12" x-data="{ 
+        activeTab: 'biodata', 
+        modalOpen: false, 
+        modalImgSignature: '', 
+        modalImgLive: '', 
+        modalDate: '',
+        modalRejectUrl: '',
+        rejectModalOpen: false
+    }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
             <!-- Tabs Navigation -->
@@ -140,9 +148,9 @@
                                         @forelse($journal->dailyActivities as $activity)
                                             <tr class="hover:bg-indigo-50/50 transition">
                                                 <td class="px-4 py-3 whitespace-nowrap font-medium">{{ \Carbon\Carbon::parse($activity->date)->format('d M Y') }}</td>
-                                                <td class="px-4 py-3">{{ $activity->activity_description }}</td>
+                                                <td class="px-4 py-3">{{ $activity->activity }}</td>
                                                 <td class="px-4 py-3 text-center">
-                                                    @if($activity->status == 'approved')
+                                                    @if($activity->is_approved)
                                                         <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">ACC</span>
                                                     @else
                                                         <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">Pending</span>
@@ -190,7 +198,7 @@
                                             <p class="text-xs text-indigo-600 bg-indigo-100 inline-block px-2 py-1 rounded">Diambil saat penilaian akhir</p>
                                         </div>
                                         <div class="relative group w-48 h-48 rounded-xl overflow-hidden shadow-md border-4 border-white cursor-pointer"
-                                             @click="modalOpen = true; modalImgLive = '{{ $journal->instructor_live_photo ? asset('storage/' . $journal->instructor_live_photo) : '' }}'; modalImgSignature = '{{ $journal->instructor_signature ? asset('storage/' . $journal->instructor_signature) : '' }}'; modalDate = 'Penilaian Akhir PKL {{ $journal->phase }}'">
+                                             @click="modalOpen = true; modalImgLive = '{{ $journal->instructor_live_photo ? asset('storage/' . $journal->instructor_live_photo) : '' }}'; modalImgSignature = '{{ $journal->instructor_signature ? asset('storage/' . $journal->instructor_signature) : '' }}'; modalDate = 'Penilaian Akhir PKL {{ $journal->phase }}'; modalRejectUrl = '{{ $journal->status == 'COMPLETED' ? route('admin.students.reject-final-assessment', $journal->id) : '' }}'">
                                             @if($journal->instructor_live_photo)
                                                 <img src="{{ asset('storage/' . $journal->instructor_live_photo) }}" class="w-full h-full object-cover transition duration-300 group-hover:scale-110" alt="Live Photo Instruktur">
                                                 <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition flex items-center justify-center">
@@ -213,7 +221,7 @@
                                                 <div class="w-1/2">
                                                     <p class="text-xs font-bold text-gray-500 uppercase mb-2">Tanda Tangan</p>
                                                     <div class="h-24 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center p-2 cursor-pointer hover:bg-gray-100 transition"
-                                                         @click="modalOpen = true; modalImgLive = '{{ $journal->instructor_live_photo ? asset('storage/' . $journal->instructor_live_photo) : '' }}'; modalImgSignature = '{{ $journal->instructor_signature ? asset('storage/' . $journal->instructor_signature) : '' }}'; modalDate = 'Penilaian Akhir PKL {{ $journal->phase }}'">
+                                                         @click="modalOpen = true; modalImgLive = '{{ $journal->instructor_live_photo ? asset('storage/' . $journal->instructor_live_photo) : '' }}'; modalImgSignature = '{{ $journal->instructor_signature ? asset('storage/' . $journal->instructor_signature) : '' }}'; modalDate = 'Penilaian Akhir PKL {{ $journal->phase }}'; modalRejectUrl = '{{ $journal->status == 'COMPLETED' ? route('admin.students.reject-final-assessment', $journal->id) : '' }}'">
                                                         @if($journal->instructor_signature)
                                                             <img src="{{ asset('storage/' . $journal->instructor_signature) }}" class="max-h-full max-w-full object-contain" alt="TTD Instruktur">
                                                         @else
@@ -311,7 +319,7 @@
                                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                     @foreach($journal->weeklyApprovals as $wa)
                                         <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition duration-300 group cursor-pointer"
-                                             @click="modalOpen = true; modalImgLive = '{{ $wa->instructor_live_photo ? asset('storage/' . $wa->instructor_live_photo) : '' }}'; modalImgSignature = '{{ $wa->instructor_paraf ? asset('storage/' . $wa->instructor_paraf) : '' }}'; modalDate = 'ACC Minggu Ke-{{ $wa->week_number }} | {{ $wa->approved_at ? $wa->approved_at->format('d M Y, H:i') : 'Unknown' }}'">
+                                             @click="modalOpen = true; modalImgLive = '{{ $wa->instructor_live_photo ? asset('storage/' . $wa->instructor_live_photo) : '' }}'; modalImgSignature = '{{ $wa->instructor_paraf ? asset('storage/' . $wa->instructor_paraf) : '' }}'; modalDate = 'ACC Minggu Ke-{{ $wa->week_number }} | {{ $wa->approved_at ? $wa->approved_at->format('d M Y, H:i') : 'Unknown' }}'; modalRejectUrl = '{{ !$wa->is_rejected ? route('admin.students.reject-weekly-approval', $wa->id) : '' }}'">
                                             
                                             <!-- Thumbnail -->
                                             <div class="h-40 bg-gray-100 relative overflow-hidden">
@@ -330,8 +338,12 @@
                                                 @endif
                                                 
                                                 <!-- Status Badge -->
-                                                <div class="absolute top-2 right-2">
-                                                    <span class="bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow">VALIDATED</span>
+                                                <div class="absolute top-2 right-2 flex flex-col gap-1 items-end">
+                                                    @if($wa->is_rejected)
+                                                        <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow">DITOLAK</span>
+                                                    @else
+                                                        <span class="bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow">VALIDATED</span>
+                                                    @endif
                                                 </div>
                                             </div>
                                             
@@ -439,7 +451,7 @@
                                                     Foto Live Guru
                                                 </p>
                                                 <div class="bg-white p-2 rounded-lg border border-indigo-200 shadow-sm relative group cursor-pointer"
-                                                     @click="modalOpen = true; modalImgLive = '{{ $journal->teacher_live_photo ? asset('storage/' . $journal->teacher_live_photo) : '' }}'; modalImgSignature = '{{ $journal->teacher_signature ? asset('storage/' . $journal->teacher_signature) : '' }}'; modalDate = 'Monitoring Guru Pembimbing (PKL Tahap {{ $journal->phase }})'">
+                                                     @click="modalOpen = true; modalImgLive = '{{ $journal->teacher_live_photo ? asset('storage/' . $journal->teacher_live_photo) : '' }}'; modalImgSignature = '{{ $journal->teacher_signature ? asset('storage/' . $journal->teacher_signature) : '' }}'; modalDate = 'Monitoring Guru Pembimbing (PKL Tahap {{ $journal->phase }})'; modalRejectUrl = '{{ $journal->monitoring_locked_at ? route('admin.students.reject-monitoring', $journal->id) : '' }}'">
                                                     @if($journal->teacher_live_photo)
                                                         <img src="{{ asset('storage/' . $journal->teacher_live_photo) }}" class="w-full h-48 object-cover rounded" alt="Live Photo Guru">
                                                         <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition flex items-center justify-center rounded">
@@ -460,7 +472,7 @@
                                                     Tanda Tangan
                                                 </p>
                                                 <div class="bg-white h-24 p-2 rounded-lg border border-indigo-200 shadow-sm flex items-center justify-center cursor-pointer hover:bg-gray-50 transition"
-                                                     @click="modalOpen = true; modalImgLive = '{{ $journal->teacher_live_photo ? asset('storage/' . $journal->teacher_live_photo) : '' }}'; modalImgSignature = '{{ $journal->teacher_signature ? asset('storage/' . $journal->teacher_signature) : '' }}'; modalDate = 'Monitoring Guru Pembimbing (PKL Tahap {{ $journal->phase }})'">
+                                                     @click="modalOpen = true; modalImgLive = '{{ $journal->teacher_live_photo ? asset('storage/' . $journal->teacher_live_photo) : '' }}'; modalImgSignature = '{{ $journal->teacher_signature ? asset('storage/' . $journal->teacher_signature) : '' }}'; modalDate = 'Monitoring Guru Pembimbing (PKL Tahap {{ $journal->phase }})'; modalRejectUrl = '{{ $journal->monitoring_locked_at ? route('admin.students.reject-monitoring', $journal->id) : '' }}'">
                                                     @if($journal->teacher_signature)
                                                         <img src="{{ asset('storage/' . $journal->teacher_signature) }}" class="max-h-full max-w-full object-contain" alt="TTD Guru">
                                                     @else
@@ -551,6 +563,49 @@
                             
                         </div>
                     </div>
+                    
+                    <!-- Rejection Button -->
+                    <template x-if="modalRejectUrl">
+                        <div class="bg-gray-100 border-t border-gray-200 px-4 py-4 sm:px-8 flex justify-end">
+                            <button type="button" @click="rejectModalOpen = true; modalOpen = false" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 shadow-sm transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+                                Tolak Bukti Otorisasi Ini
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- REJECTION MODAL -->
+        <div x-show="rejectModalOpen" class="fixed inset-0 z-[60] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="display: none;">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div x-show="rejectModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black bg-opacity-80 transition-opacity" aria-hidden="true" @click="rejectModalOpen = false; modalOpen = true"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                
+                <div x-show="rejectModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <form :action="modalRejectUrl" method="POST">
+                        @csrf
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <div class="sm:flex sm:items-start">
+                                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                    <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                </div>
+                                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Tolak Bukti Otorisasi</h3>
+                                    <div class="mt-2">
+                                        <p class="text-sm text-gray-500 mb-4">Anda akan menolak bukti foto/tanda tangan ini. Bukti yang tidak valid akan dihapus dan siswa akan diminta untuk melakukan foto ulang bersama instruktur/guru.</p>
+                                        <label class="block text-sm font-bold text-gray-700 mb-2">Alasan Penolakan <span class="text-red-500">*</span></label>
+                                        <textarea name="rejection_note" rows="4" class="shadow-sm focus:ring-red-500 focus:border-red-500 block w-full sm:text-sm border-gray-300 border rounded-md p-3" placeholder="Contoh: Foto tidak jelas, hanya terlihat tembok. Harap foto bersama instruktur." required></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">Konfirmasi Tolak</button>
+                            <button type="button" @click="rejectModalOpen = false; modalOpen = true" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Batal</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

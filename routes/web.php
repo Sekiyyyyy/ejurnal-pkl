@@ -47,10 +47,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/siswa/{id}', [App\Http\Controllers\Admin\StudentController::class, 'destroy'])->name('students.destroy');
     Route::put('/siswa/{id}/reset-password', [App\Http\Controllers\Admin\StudentController::class, 'resetPassword'])->name('students.reset-password');
     Route::put('/siswa/{student_id}/reset-journal/{journal_id}', [App\Http\Controllers\Admin\StudentController::class, 'resetJournal'])->name('students.reset-journal');
-
+    
+    // Rejection Routes
+    Route::post('/siswa/reject-weekly-approval/{id}', [App\Http\Controllers\Admin\StudentController::class, 'rejectWeeklyApproval'])->name('students.reject-weekly-approval');
+    Route::post('/siswa/reject-final-assessment/{id}', [App\Http\Controllers\Admin\StudentController::class, 'rejectFinalAssessment'])->name('students.reject-final-assessment');
+    Route::post('/siswa/reject-monitoring/{id}', [App\Http\Controllers\Admin\StudentController::class, 'rejectMonitoring'])->name('students.reject-monitoring');
     // Manajemen Template Word
     Route::get('/template', [App\Http\Controllers\Admin\TemplateController::class, 'index'])->name('templates.index');
     Route::post('/template', [App\Http\Controllers\Admin\TemplateController::class, 'store'])->name('templates.store');
+    Route::put('/template/{id}', [App\Http\Controllers\Admin\TemplateController::class, 'update'])->name('templates.update');
     Route::put('/template/{id}/activate', [App\Http\Controllers\Admin\TemplateController::class, 'activate'])->name('templates.activate');
     Route::delete('/template/{id}', [App\Http\Controllers\Admin\TemplateController::class, 'destroy'])->name('templates.destroy');
 

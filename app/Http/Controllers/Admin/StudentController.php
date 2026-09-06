@@ -206,4 +206,83 @@ class StudentController extends Controller
 
         return back()->with('success', 'Seluruh progress Jurnal PKL Tahap '.$journal->phase.' berhasil di-reset ke kondisi awal (termasuk foto/TTD di storage).');
     }
+
+    public function rejectWeeklyApproval(Request $request, $id)
+    {
+        $request->validate(['rejection_note' => 'required|string']);
+        $wa = \App\Models\WeeklyApproval::findOrFail($id);
+        
+        // Delete invalid evidence
+        if($wa->instructor_live_photo) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($wa->instructor_live_photo);
+            $wa->instructor_live_photo = '';
+        }
+        if($wa->instructor_paraf) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($wa->instructor_paraf);
+            $wa->instructor_paraf = '';
+        }
+
+        $wa->rejection_note = $request->rejection_note;
+        $wa->is_rejected = true;
+        $wa->approved_at = null; // Un-approve it
+        $wa->save();
+
+        // Also un-approve the daily activities for that week
+        $startDate = $wa->journal->start_date ? \Carbon\Carbon::parse($wa->journal->start_date)->startOfWeek() : now()->startOfWeek();
+        $activities = $wa->journal->dailyActivities()->where('is_approved', true)->get()->filter(function($activity) use ($wa, $startDate) {
+            $activityDate = \Carbon\Carbon::parse($activity->date)->startOfWeek();
+            $relativeWeek = $startDate->diffInWeeks($activityDate) + 1;
+            return $relativeWeek == $wa->week_number;
+        });
+
+        foreach($activities as $activity) {
+            $activity->update(['is_approved' => false]);
+        }
+
+        return back()->with('success', 'Bukti ACC Mingguan berhasil ditolak.');
+    }
+
+    public function rejectFinalAssessment(Request $request, $id)
+    {
+        $request->validate(['rejection_note' => 'required|string']);
+        $journal = \App\Models\Journal::findOrFail($id);
+
+        if($journal->instructor_live_photo) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($journal->instructor_live_photo);
+            $journal->instructor_live_photo = null;
+        }
+        if($journal->instructor_signature) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($journal->instructor_signature);
+            $journal->instructor_signature = null;
+        }
+
+        $journal->instructor_rejection_note = $request->rejection_note;
+        if($journal->status === 'COMPLETED') {
+            $journal->status = 'IN_PROGRESS'; // Unlock it
+        }
+        $journal->save();
+
+        return back()->with('success', 'Bukti Penilaian Akhir berhasil ditolak.');
+    }
+
+    public function rejectMonitoring(Request $request, $id)
+    {
+        $request->validate(['rejection_note' => 'required|string']);
+        $journal = \App\Models\Journal::findOrFail($id);
+
+        if($journal->teacher_live_photo) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($journal->teacher_live_photo);
+            $journal->teacher_live_photo = null;
+        }
+        if($journal->teacher_signature) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($journal->teacher_signature);
+            $journal->teacher_signature = null;
+        }
+
+        $journal->teacher_rejection_note = $request->rejection_note;
+        $journal->monitoring_locked_at = null; // Unlock it
+        $journal->save();
+
+        return back()->with('success', 'Bukti Monitoring Guru berhasil ditolak.');
+    }
 }

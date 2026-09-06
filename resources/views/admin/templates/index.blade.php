@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-12" x-data="{ editModalOpen: false, editTemplateId: null, editMajorId: '', editName: '', editActionUrl: '' }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
             @if(session('success'))
@@ -63,7 +63,7 @@
                                     <th class="px-4 py-3 border">Nama Template</th>
                                     <th class="px-4 py-3 border">Jurusan</th>
                                     <th class="px-4 py-3 border text-center">Status</th>
-                                    <th class="px-4 py-3 border text-center w-48">Aksi</th>
+                                    <th class="px-4 py-3 border text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -73,29 +73,31 @@
                                     <td class="px-4 py-3 border">{{ $template->major->code ?? '-' }}</td>
                                     <td class="px-4 py-3 border text-center">
                                         @if($template->is_active)
-                                            <span class="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded">AKTIF DIGUNAKAN</span>
+                                            <span class="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded whitespace-nowrap">AKTIF DIGUNAKAN</span>
                                         @else
-                                            <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">TIDAK AKTIF</span>
+                                            <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded whitespace-nowrap">TIDAK AKTIF</span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-3 border flex justify-center gap-2">
-                                        @if(!$template->is_active)
-                                            <form action="{{ route('admin.templates.activate', $template->id) }}" method="POST">
-                                                @csrf @method('PUT')
-                                                <button type="submit" class="text-white bg-indigo-600 hover:bg-indigo-700 font-semibold text-xs px-2 py-1 rounded">Gunakan Ini</button>
-                                            </form>
-                                            <form action="{{ route('admin.templates.destroy', $template->id) }}" method="POST" onsubmit="return confirm('Hapus template ini?');">
-                                                @csrf @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-800 font-semibold text-xs bg-red-100 px-2 py-1 rounded">Hapus</button>
-                                            </form>
-                                        @else
-                                            <span class="text-xs text-gray-400 italic">Sedang Dipakai</span>
-                                        @endif
+                                    <td class="px-4 py-3 border">
+                                        <div class="flex flex-wrap justify-center gap-2">
+                                            <button type="button" @click="editModalOpen = true; editTemplateId = '{{ $template->id }}'; editMajorId = '{{ $template->major_id }}'; editName = '{{ $template->name }}'; editActionUrl = '{{ route('admin.templates.update', $template->id) }}'" class="text-white bg-blue-600 hover:bg-blue-700 font-semibold text-xs px-2 py-1 rounded whitespace-nowrap">Ganti / Edit</button>
+                                            
+                                            @if(!$template->is_active)
+                                                <form action="{{ route('admin.templates.activate', $template->id) }}" method="POST" class="inline">
+                                                    @csrf @method('PUT')
+                                                    <button type="submit" class="text-white bg-indigo-600 hover:bg-indigo-700 font-semibold text-xs px-2 py-1 rounded whitespace-nowrap">Gunakan</button>
+                                                </form>
+                                                <form action="{{ route('admin.templates.destroy', $template->id) }}" method="POST" onsubmit="return confirm('Hapus template ini?');" class="inline">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-800 font-semibold text-xs bg-red-100 px-2 py-1 rounded whitespace-nowrap">Hapus</button>
+                                                </form>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="3" class="px-4 py-3 text-center text-gray-500">Belum ada template. Silakan upload terlebih dahulu.</td>
+                                    <td colspan="4" class="px-4 py-3 text-center text-gray-500">Belum ada template. Silakan upload terlebih dahulu.</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -103,6 +105,44 @@
                     </div>
                 </div>
 
+            </div>
+        </div>
+
+        <!-- EDIT MODAL -->
+        <div x-show="editModalOpen" class="fixed inset-0 z-[60] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="display: none;">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div x-show="editModalOpen" class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" @click="editModalOpen = false"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                <div x-show="editModalOpen" class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <form :action="editActionUrl" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        @method('PUT')
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">Ganti / Edit Template</h3>
+                            <div class="mb-4">
+                                <x-input-label for="edit_major_id" value="Jurusan Tujuan" />
+                                <select id="edit_major_id" name="major_id" x-model="editMajorId" class="block mt-1 w-full border-gray-300 rounded-md text-sm" required>
+                                    @foreach($majors as $major)
+                                        <option value="{{ $major->id }}">{{ $major->code }} - {{ $major->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <x-input-label for="edit_name" value="Nama / Versi Template" />
+                                <x-text-input id="edit_name" class="block mt-1 w-full" type="text" name="name" x-model="editName" required />
+                            </div>
+                            <div class="mb-4">
+                                <x-input-label for="edit_file" value="File Dokumen (.docx) - Opsional" />
+                                <input id="edit_file" type="file" name="file" accept=".docx" class="block mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
+                                <p class="text-xs text-gray-400 mt-1">Kosongkan jika tidak ingin mengganti file.</p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">Simpan Perubahan</button>
+                            <button type="button" @click="editModalOpen = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Batal</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

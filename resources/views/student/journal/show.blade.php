@@ -41,6 +41,56 @@
             </div>
         </div>
 
+        <!-- Rejection Alerts -->
+        @if($journal->instructor_rejection_note || $journal->teacher_rejection_note || $journal->weeklyApprovals->where('is_rejected', true)->count() > 0)
+            <div class="mt-6 space-y-3">
+                @if($journal->instructor_rejection_note)
+                    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">❌</div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-bold text-red-800">Bukti Penilaian Akhir Ditolak Admin</h3>
+                                <div class="mt-1 text-sm text-red-700">
+                                    <p><strong>Alasan:</strong> {{ $journal->instructor_rejection_note }}</p>
+                                    <p class="mt-1 font-semibold">Silakan buka menu Penilaian Instruktur untuk mengambil ulang foto live bersama instruktur.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+                
+                @if($journal->teacher_rejection_note)
+                    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">❌</div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-bold text-red-800">Bukti Monitoring Guru Ditolak Admin</h3>
+                                <div class="mt-1 text-sm text-red-700">
+                                    <p><strong>Alasan:</strong> {{ $journal->teacher_rejection_note }}</p>
+                                    <p class="mt-1 font-semibold">Silakan buka menu Monitoring Guru untuk mengambil ulang foto live bersama guru pembimbing.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                @foreach($journal->weeklyApprovals->where('is_rejected', true) as $wa)
+                    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">❌</div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-bold text-red-800">Bukti ACC Mingguan (Minggu Ke-{{ $wa->week_number }}) Ditolak Admin</h3>
+                                <div class="mt-1 text-sm text-red-700">
+                                    <p><strong>Alasan:</strong> {{ $wa->rejection_note }}</p>
+                                    <p class="mt-1 font-semibold">Status logbook pada minggu tersebut telah dikembalikan menjadi 'Pending'. Silakan klik tombol ACC Mingguan lagi untuk foto ulang.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
         <!-- Alert Dinamis (SUDUT PANDANG SISWA) -->
         @if($progress < 100)
             <div class="mt-4 bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 text-sm rounded-lg shadow-sm flex items-center gap-2">

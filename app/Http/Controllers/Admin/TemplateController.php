@@ -42,6 +42,36 @@ class TemplateController extends Controller
         return back()->with('success', 'Template baru berhasil diunggah untuk jurusan terkait!');
     }
 
+    public function update(Request $request, $id)
+    {
+        $template = Template::findOrFail($id);
+        
+        $request->validate([
+            'major_id' => 'required|exists:majors,id',
+            'name' => 'required|string|max:255',
+            'file' => 'nullable|mimes:docx|max:5120', 
+        ]);
+
+        $data = [
+            'major_id' => $request->major_id,
+            'name' => $request->name,
+        ];
+
+        if ($request->hasFile('file')) {
+            if (Storage::disk('public')->exists($template->file_path)) {
+                Storage::disk('public')->delete($template->file_path);
+            }
+            
+            $file = $request->file('file');
+            $filename = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
+            $data['file_path'] = $file->storeAs('templates', $filename, 'public');
+        }
+
+        $template->update($data);
+
+        return back()->with('success', 'Data template berhasil diperbarui!');
+    }
+
     public function activate($id)
     {
         $template = Template::findOrFail($id);

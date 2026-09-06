@@ -108,7 +108,7 @@
                             </p>
                         </div>
                         
-                        <x-live-authenticator idPrefix="monitoring-auth" formId="form-monitoring" />
+                        <x-live-authenticator idPrefix="monitoring-auth" formId="form-monitoring" cameraHelperText="Wajib ambil foto wajah secara live BERSAMA guru pembimbing." />
 
                         <div class="flex justify-end mt-6 pt-4 border-t border-gray-200">
                             <x-primary-button class="bg-blue-600 hover:bg-blue-700">

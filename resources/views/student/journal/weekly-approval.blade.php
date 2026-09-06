@@ -54,7 +54,7 @@
                         <input type="hidden" name="week_number" value="{{ $weekNumber }}">
                         <input type="hidden" name="year" value="{{ $year }}">
                         
-                        <x-live-authenticator idPrefix="week-{{ $weekNumber }}" formId="form-weekly-approval" />
+                        <x-live-authenticator idPrefix="week-{{ $weekNumber }}" formId="form-weekly-approval" cameraHelperText="Wajib ambil foto wajah secara live BERSAMA instruktur PKL." />
                         
                         <div class="mt-6 flex justify-end space-x-3">
                             <a href="{{ route('journal.show', $journal->id) }}" class="inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-800 uppercase tracking-widest hover:bg-gray-300">

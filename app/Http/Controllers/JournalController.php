@@ -235,6 +235,7 @@ class JournalController extends Controller
             'teacher_signature' => $signaturePath,
             'teacher_live_photo' => $photoPath,
             'monitoring_locked_at' => now(),
+            'teacher_rejection_note' => null,
         ]);
 
         return redirect()->route('journal.show', $journal->id)->with('success', 'Monitoring Guru berhasil disimpan secara permanen.');
@@ -295,17 +296,20 @@ class JournalController extends Controller
             return redirect()->route('journal.show', $journal->id)->with('success', 'Semua logbook sudah di-ACC.');
         }
 
-        // Group by week-year string (e.g., "42-2026")
-        $groupedActivities = $unapprovedActivities->groupBy(function($date) {
-            return \Carbon\Carbon::parse($date->date)->format('W-Y');
+        $startDate = $journal->start_date ? \Carbon\Carbon::parse($journal->start_date)->startOfWeek() : now()->startOfWeek();
+
+        // Group by relative week number
+        $groupedActivities = $unapprovedActivities->groupBy(function($date) use ($startDate) {
+            $activityDate = \Carbon\Carbon::parse($date->date)->startOfWeek();
+            return $startDate->diffInWeeks($activityDate) + 1;
         });
 
         // Get the first group to approve
         $currentWeekGroup = $groupedActivities->keys()->first();
         $activitiesToApprove = $groupedActivities[$currentWeekGroup];
         
-        $weekNumber = explode('-', $currentWeekGroup)[0];
-        $year = explode('-', $currentWeekGroup)[1];
+        $weekNumber = $currentWeekGroup;
+        $year = \Carbon\Carbon::parse($activitiesToApprove->first()->date)->format('Y');
 
         return view('student.journal.weekly-approval', compact('journal', 'activitiesToApprove', 'weekNumber', 'year'));
     }
@@ -324,20 +328,38 @@ class JournalController extends Controller
         $signaturePath = $this->saveBase64Image($request->signature_base64, 'signatures');
         $photoPath = $this->saveBase64Image($request->live_photo_base64, 'live_photos');
 
-        // Create Weekly Approval Record
-        WeeklyApproval::create([
-            'journal_id' => $journal->id,
-            'week_number' => $request->week_number,
-            'year' => $request->year,
-            'instructor_paraf' => $signaturePath,
-            'instructor_live_photo' => $photoPath,
-            'approved_at' => now(),
-        ]);
+        $existingWA = WeeklyApproval::where('journal_id', $journal->id)
+            ->where('week_number', $request->week_number)
+            ->where('year', $request->year)
+            ->where('is_rejected', true)
+            ->first();
+
+        if ($existingWA) {
+            $existingWA->update([
+                'instructor_paraf' => $signaturePath,
+                'instructor_live_photo' => $photoPath,
+                'approved_at' => now(),
+                'is_rejected' => false,
+                'rejection_note' => null,
+            ]);
+        } else {
+            // Create Weekly Approval Record
+            WeeklyApproval::create([
+                'journal_id' => $journal->id,
+                'week_number' => $request->week_number,
+                'year' => $request->year,
+                'instructor_paraf' => $signaturePath,
+                'instructor_live_photo' => $photoPath,
+                'approved_at' => now(),
+            ]);
+        }
 
         // Update Daily Activities for that week to is_approved = true
-        $activities = $journal->dailyActivities()->where('is_approved', false)->get()->filter(function($activity) use ($request) {
-            $date = \Carbon\Carbon::parse($activity->date);
-            return $date->format('W') == $request->week_number && $date->format('Y') == $request->year;
+        $startDate = $journal->start_date ? \Carbon\Carbon::parse($journal->start_date)->startOfWeek() : now()->startOfWeek();
+        $activities = $journal->dailyActivities()->where('is_approved', false)->get()->filter(function($activity) use ($request, $startDate) {
+            $activityDate = \Carbon\Carbon::parse($activity->date)->startOfWeek();
+            $relativeWeek = $startDate->diffInWeeks($activityDate) + 1;
+            return $relativeWeek == $request->week_number;
         });
 
         foreach($activities as $activity) {

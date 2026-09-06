@@ -1,4 +1,4 @@
-@props(['idPrefix' => 'auth', 'submitButtonId' => 'btn-submit', 'formId' => 'form-auth'])
+@props(['idPrefix' => 'auth', 'submitButtonId' => 'btn-submit', 'formId' => 'form-auth', 'cameraHelperText' => 'Wajib foto bersama.'])
 
 <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Live Authenticator</h3>
@@ -18,7 +18,10 @@
 
         <!-- Live Camera -->
         <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Foto Wajah Live</label>
+            <div class="mb-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Foto Wajah Live</label>
+                <p class="text-xs font-bold text-red-600 animate-pulse mt-1">⚠️ {{ $cameraHelperText }}</p>
+            </div>
             <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 overflow-hidden relative w-full flex flex-col items-center justify-center" style="height: 192px;">
                 <video id="{{ $idPrefix }}-camera-video" class="w-full h-full object-cover" autoplay playsinline muted style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></video>
                 <canvas id="{{ $idPrefix }}-camera-canvas" class="hidden w-full h-full object-cover" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2;"></canvas>

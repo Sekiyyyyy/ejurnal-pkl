@@ -115,7 +115,8 @@ class InstructorAssessmentController extends Controller
         $journal->update([
             'instructor_signature' => $signaturePath,
             'instructor_live_photo' => $photoPath,
-            'status' => 'COMPLETED'
+            'status' => 'COMPLETED',
+            'instructor_rejection_note' => null,
         ]);
 
         // 6. Update completion date in students table
