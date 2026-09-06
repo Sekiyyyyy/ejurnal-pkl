@@ -152,7 +152,7 @@ class JournalController extends Controller
         $progress = 0;
         if ($isProfileFilled) $progress += 15;
         if ($isDataPklFilled) $progress += 15;
-        if ($isDailyFilled) $progress += 20; 
+        if ($isDailyApproved) $progress += 20; 
         if ($isMonitoringFilled) $progress += 15;
         if ($isPenilaianFilled) $progress += 15;
         if ($isTtdFilled) $progress += 20;

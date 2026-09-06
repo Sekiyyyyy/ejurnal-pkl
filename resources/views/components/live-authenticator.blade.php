@@ -106,33 +106,32 @@ document.addEventListener("DOMContentLoaded", function() {
     startCamera();
 
     takeButton.addEventListener('click', () => {
-        // Create 600x800 canvas for compression
-        const targetWidth = 600;
-        const targetHeight = 800;
+        // Capture exactly what the camera outputs, maintaining its native aspect ratio
+        const rawWidth = video.videoWidth;
+        const rawHeight = video.videoHeight;
+        
+        // Scale down to max 800px on the longest edge to save storage space
+        const maxSize = 800;
+        let targetWidth = rawWidth;
+        let targetHeight = rawHeight;
+        
+        if (rawWidth > maxSize || rawHeight > maxSize) {
+            if (rawWidth > rawHeight) {
+                targetWidth = maxSize;
+                targetHeight = Math.round((rawHeight / rawWidth) * maxSize);
+            } else {
+                targetHeight = maxSize;
+                targetWidth = Math.round((rawWidth / rawHeight) * maxSize);
+            }
+        }
+        
         photoCanvas.width = targetWidth;
         photoCanvas.height = targetHeight;
         
         const ctx = photoCanvas.getContext('2d');
         
-        // Calculate crop to maintain aspect ratio
-        const videoRatio = video.videoWidth / video.videoHeight;
-        const targetRatio = targetWidth / targetHeight;
-        
-        let drawWidth, drawHeight, startX, startY;
-        
-        if (videoRatio > targetRatio) {
-            drawHeight = video.videoHeight;
-            drawWidth = video.videoHeight * targetRatio;
-            startX = (video.videoWidth - drawWidth) / 2;
-            startY = 0;
-        } else {
-            drawWidth = video.videoWidth;
-            drawHeight = video.videoWidth / targetRatio;
-            startX = 0;
-            startY = (video.videoHeight - drawHeight) / 2;
-        }
-
-        ctx.drawImage(video, startX, startY, drawWidth, drawHeight, 0, 0, targetWidth, targetHeight);
+        // Draw the full video frame scaled to the target size, no distortion or forced cropping
+        ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
         
         // Compress to 60% quality WebP or JPEG
         const compressedDataUrl = photoCanvas.toDataURL('image/jpeg', 0.6);

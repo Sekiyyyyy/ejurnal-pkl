@@ -49,8 +49,10 @@
                     <strong>Status Jurnal:</strong> 
                     @if(!$isProfileFilled || !$isDataPklFilled || !$isDailyFilled || !$isTtdFilled)
                         Silakan lengkapi data mandiri (Biodata, Data PKL, Logbook, dan Tanda Tangan) Anda.
+                    @elseif(!$isDailyApproved)
+                        Data mandiri Anda sudah lengkap, namun <strong>Logbook/Kehadiran belum di-ACC sepenuhnya oleh Instruktur.</strong>
                     @else
-                        Data mandiri Anda sudah lengkap. Progress belum 100% karena <strong>menunggu Instruktur atau Guru Pembimbing menyelesaikan form penilaian.</strong>
+                        Data mandiri dan Logbook Anda sudah lengkap. Progress belum 100% karena <strong>menunggu Instruktur atau Guru Pembimbing menyelesaikan form penilaian/monitoring.</strong>
                     @endif
                 </div>
             </div>

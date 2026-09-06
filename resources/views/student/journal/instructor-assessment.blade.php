@@ -17,11 +17,11 @@
                 @endphp
 
                 <div class="mb-6 p-4 {{ $isLocked ? 'bg-yellow-50 border-yellow-200 text-yellow-800' : 'bg-blue-50 border-blue-200 text-blue-800' }} border rounded text-sm">
-                    <strong>Pemberitahuan:</strong> 
+                    <strong>Pemberitahuan Device Handoff:</strong> 
                     @if($isLocked)
                         Penilaian ini sudah <strong>dikunci permanen</strong> karena telah disubmit oleh Instruktur.
                     @else
-                        Halaman ini diisi secara langsung oleh <strong>Instruktur / Penanggung Jawab DUDI</strong>.
+                        Halaman ini harus diisi secara langsung oleh <strong>Instruktur / Penanggung Jawab DUDI</strong> dengan menggunakan perangkat (HP/Laptop) milik siswa ini.
                     @endif
                 </div>
 

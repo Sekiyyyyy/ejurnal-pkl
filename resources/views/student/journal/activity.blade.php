@@ -13,7 +13,7 @@
             
             <div class="mb-6 bg-amber-50 border border-amber-300 text-amber-900 p-4 rounded-lg text-sm">
                 ⚠️ <strong>Perhatian:</strong> Catatan harian wajib diisi lengkap untuk setiap hari selama periode PKL. 
-                <br>• <strong>Tombol ACC & Catatan Instruktur</strong> baru akan aktif jika <strong>Paraf Instruktur sudah di-upload</strong> di menu <a href="{{ route('journal.signatures', $journal->id) }}" class="underline font-bold hover:text-amber-700">Tanda Tangan</a>.
+                <br>• Klik tombol <strong>Minta ACC Mingguan</strong> secara berkala untuk memvalidasi logbook Anda bersama Instruktur.
                 <br>• Catatan harian hanya dapat diedit atau dihapus selama <strong>belum disetujui (di-ACC)</strong> oleh instruktur.
             </div>
 
@@ -155,17 +155,6 @@
                                                     </form>
                                                 </div>
 
-                                                <!-- TOMBOL ACC HARIAN INSTRUKTUR -->
-                                                @if($journal->instructor_paraf)
-                                                    <form action="{{ route('journal.approve-activity', [$journal->id, $act->id]) }}" method="POST">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <input type="text" name="instructor_notes" placeholder="Catatan instruktur (Wajib)..." class="text-xs border-gray-300 rounded w-full mb-1 p-1" required>
-                                                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-2 py-1.5 rounded w-full transition shadow-sm">
-                                                            ✓ ACC & Paraf
-                                                        </button>
-                                                    </form>
-                                                @endif
                                             @endif
                                         </td>
                                     </tr>
