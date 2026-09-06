@@ -47,9 +47,7 @@
 
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 relative {{ $isLocked ? 'opacity-80' : '' }}">
                     @if($isLocked)
-                        <div class="absolute top-4 right-4 text-red-500">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
-                        </div>
+                        <div class="absolute top-4 right-4 text-red-500"><i class="fa-solid fa-lock text-xl"></i></div>
                     @endif
 
                     <h3 class="text-lg font-bold text-gray-900 mb-2">Jurnal PKL Fase {{ $journal->phase }}</h3>
@@ -84,7 +82,7 @@
     <!-- BAGIAN 2: FITUR TOMBOL BANTUAN & MODAL     -->
     <!-- ========================================== -->
     <div x-data="{ isOpen: false }" 
-         x-init="setTimeout(() => isOpen = true, 500)">
+         @if(session('just_logged_in')) x-init="setTimeout(() => isOpen = true, 500)" @endif>
          
         <!-- Tombol Mengambang Pojok Kanan Bawah -->
         <button @click="isOpen = true" style="z-index: 40;" class="fixed bottom-6 right-6 bg-gradient-to-r from-indigo-600 to-blue-600 text-white w-14 h-14 rounded-full shadow-xl hover:shadow-indigo-500/50 hover:scale-105 flex items-center justify-center cursor-pointer transition-all duration-300">
@@ -295,7 +293,6 @@
 
                     </div>
 
-                    <!-- Footer Modal -->
                     <div class="bg-white px-6 py-4 flex justify-end border-t border-gray-100">
                         <button type="button" @click="isOpen = false" class="inline-flex justify-center items-center rounded-lg border border-transparent bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-2.5 text-sm font-bold text-white shadow-md hover:shadow-lg hover:from-indigo-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 transform hover:-translate-y-0.5">
                             <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
@@ -306,4 +303,16 @@
             </div>
         </div>
     </div>
+
+    <!-- Floating Customer Service Button (Hanya di Dashboard) -->
+    <a href="https://wa.me/6285188981707?text=Halo%20Admin%2C%20saya%20butuh%20bantuan%20terkait%20E-Jurnal%20PKL." 
+       target="_blank"
+       class="fixed bottom-24 right-6 z-50 flex items-center bg-indigo-600 text-white rounded-full shadow-xl hover:bg-indigo-700 transition-all duration-300 hover:-translate-y-1 group hover:pr-6">
+        <div class="w-14 h-14 flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-headset text-2xl"></i>
+        </div>
+        <span class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 font-bold text-sm">
+            Pusat Bantuan
+        </span>
+    </a>
 </x-app-layout>

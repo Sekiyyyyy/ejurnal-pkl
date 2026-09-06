@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class WeeklyApproval extends Model
 {
     protected $fillable = [
-        'journal_id', 'week_number', 'year', 'instructor_paraf', 'instructor_live_photo', 'approved_at'
+        'journal_id', 'week_number', 'year', 'instructor_paraf', 'instructor_live_photo', 'approved_at',
+        'is_rejected', 'rejection_note'
     ];
 
     protected $casts = [

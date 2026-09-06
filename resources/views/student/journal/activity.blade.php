@@ -12,7 +12,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
             <div class="mb-6 bg-amber-50 border border-amber-300 text-amber-900 p-4 rounded-lg text-sm">
-                ⚠️ <strong>Perhatian:</strong> Catatan harian wajib diisi lengkap untuk setiap hari selama periode PKL. 
+                <i class="fa-solid fa-circle-exclamation text-amber-600 mr-1 text-lg"></i> <strong>Perhatian:</strong> Catatan harian wajib diisi lengkap untuk setiap hari selama periode PKL. 
                 <br>• Klik tombol <strong>Minta ACC Mingguan</strong> secara berkala untuk memvalidasi logbook Anda bersama Instruktur.
                 <br>• Catatan harian hanya dapat diedit atau dihapus selama <strong>belum disetujui (di-ACC)</strong> oleh instruktur.
             </div>
@@ -138,7 +138,7 @@
                                         <td class="px-4 py-3 align-top">
                                             @if($act->is_approved)
                                                 <span class="inline-flex items-center text-xs text-green-700 bg-green-100 px-2 py-1 rounded">
-                                                    ✓ Telah Di-ACC
+                                                    <i class="fa-solid fa-check mr-1"></i> Telah Di-ACC
                                                 </span>
                                                 @if($act->instructor_notes)
                                                     <div class="mt-2 text-xs bg-yellow-50 p-2 rounded border border-yellow-100">

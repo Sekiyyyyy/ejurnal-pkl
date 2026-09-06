@@ -16,13 +16,18 @@ class DatabaseSeeder extends Seeder
         // 1. Masukkan Master Asesmen
         $this->call([AssessmentSeeder::class]);
 
-        // 2. Akun Super Admin (Untuk kelola master data nantinya)
-        User::create([
-            'name' => 'Super Admin',
-            'email' => 'admin@gmail.com',
-            'password' => Hash::make('password'),
-            'role' => User::ROLE_SUPER_ADMIN,
-        ]);
+        // 2. Akun Super Admin (Berdasarkan variabel environment)
+        $adminEmail = env('ADMIN_EMAIL');
+        $adminPassword = env('ADMIN_PASSWORD');
+        
+        if ($adminEmail && $adminPassword) {
+            User::create([
+                'name' => 'Super Admin',
+                'email' => $adminEmail,
+                'password' => Hash::make($adminPassword),
+                'role' => User::ROLE_SUPER_ADMIN,
+            ]);
+        }
 
         // 3. Akun Siswa
         $userStudent = User::create([

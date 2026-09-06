@@ -39,7 +39,7 @@ class RegisteredUserController extends Controller
             'nisn' => ['required', 'numeric', 'digits:10', 'unique:students,nisn'], // <-- Diubah di sini
             'major_id' => ['required', 'exists:majors,id'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', 'min:8', Rules\Password::defaults()],
         ], [
             // Pesan error kustom bahasa Indonesia
             'nisn.required' => 'NISN wajib diisi.',

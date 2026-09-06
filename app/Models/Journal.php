@@ -13,7 +13,8 @@ class Journal extends Model
         'instructor_name', 'instructor_position', 'instructor_email', 'instructor_phone', 'instructor_address', // Update
         'start_date', 'end_date',
         'student_signature', 'parent_signature', 'instructor_signature', 'instructor_paraf',
-        'teacher_signature', 'teacher_live_photo', 'kaprog_signature', 'monitoring_locked_at'
+        'teacher_signature', 'teacher_live_photo', 'kaprog_signature', 'monitoring_locked_at',
+        'instructor_live_photo'
     ];
 
     protected function casts(): array

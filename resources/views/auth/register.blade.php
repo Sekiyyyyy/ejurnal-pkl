@@ -1,8 +1,11 @@
 <x-guest-layout>
     <!-- Header -->
-    <div class="mb-6 text-center text-white">
-        <h1 class="text-xl font-extrabold tracking-wide drop-shadow-sm uppercase">E-JURNAL SMKN 1 BERINGIN</h1>
-        <p class="mt-1 text-sm font-medium text-white/90">Daftar untuk melanjutkan</p>
+    <div class="mb-8 text-center text-white">
+        <h1 class="text-2xl font-extrabold tracking-wider drop-shadow-md uppercase bg-clip-text text-transparent bg-gradient-to-r from-emerald-300 to-cyan-300">
+            E-JURNAL
+        </h1>
+        <h2 class="text-lg font-semibold tracking-wide drop-shadow-sm uppercase">SMKN 1 BERINGIN</h2>
+        <p class="mt-2 text-sm font-medium text-white/80">Daftar untuk melanjutkan</p>
     </div>
 
     <form method="POST" action="{{ route('register') }}" class="space-y-4">
@@ -10,82 +13,84 @@
 
         <!-- Input Nama -->
         <div>
-            <label for="name" class="mb-1 block text-xs font-semibold text-white drop-shadow-sm">Nama Lengkap</label>
+            <label for="name" class="mb-1.5 block text-xs font-semibold text-white/90 uppercase tracking-wider">Nama Lengkap</label>
             <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus
-                   class="block w-full rounded-lg border-none bg-[#f4f7fb] px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#21a650]">
-            @error('name') <span class="text-red-300 text-xs mt-1 block">{{ $message }}</span> @enderror
+                   class="input-field block w-full rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-0">
+            @error('name') <span class="text-red-400 font-medium text-xs mt-1 block">{{ $message }}</span> @enderror
         </div>
 
         <!-- Input NISN -->
         <div>
-            <label for="nisn" class="mb-1 block text-xs font-semibold text-white drop-shadow-sm">NISN</label>
+            <label for="nisn" class="mb-1.5 block text-xs font-semibold text-white/90 uppercase tracking-wider">NISN</label>
             <input id="nisn" type="text" name="nisn" value="{{ old('nisn') }}" required
-                   class="block w-full rounded-lg border-none bg-[#f4f7fb] px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#21a650]">
-            @error('nisn') <span class="text-red-300 text-xs mt-1 block">{{ $message }}</span> @enderror
+                   class="input-field block w-full rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-0">
+            @error('nisn') <span class="text-red-400 font-medium text-xs mt-1 block">{{ $message }}</span> @enderror
         </div>
         
         <!-- Input Jurusan -->
         <div>
-            <label for="major_id" class="mb-1 block text-xs font-semibold text-white drop-shadow-sm">Jurusan</label>
+            <label for="major_id" class="mb-1.5 block text-xs font-semibold text-white/90 uppercase tracking-wider">Jurusan</label>
             <select id="major_id" name="major_id" required
-                    class="block w-full rounded-lg border-none bg-[#f4f7fb] px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-[#21a650]">
+                    class="input-field block w-full rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-0 [&>option]:text-gray-900">
                 <option value="" disabled selected>Pilih</option>
                 @foreach($majors as $major)
                     <option value="{{ $major->id }}" {{ old('major_id') == $major->id ? 'selected' : '' }}>{{ $major->name }}</option>
                 @endforeach
             </select>
-            @error('major_id') <span class="text-red-300 text-xs mt-1 block">{{ $message }}</span> @enderror
+            @error('major_id') <span class="text-red-400 font-medium text-xs mt-1 block">{{ $message }}</span> @enderror
         </div>
 
         <!-- Input Email -->
         <div>
-            <label for="email" class="mb-1 block text-xs font-semibold text-white drop-shadow-sm">Email</label>
+            <label for="email" class="mb-1.5 block text-xs font-semibold text-white/90 uppercase tracking-wider">Email</label>
             <input id="email" type="email" name="email" value="{{ old('email') }}" required
-                   class="block w-full rounded-lg border-none bg-[#f4f7fb] px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#21a650]">
-            @error('email') <span class="text-red-300 text-xs mt-1 block">{{ $message }}</span> @enderror
+                   class="input-field block w-full rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-0">
+            @error('email') <span class="text-red-400 font-medium text-xs mt-1 block">{{ $message }}</span> @enderror
         </div>
 
         <!-- Input Password dengan Fitur Mata -->
-        <div>
-            <label for="password" class="mb-1 block text-xs font-semibold text-white drop-shadow-sm">Password</label>
-            <div class="relative">
-                <input id="password" type="password" name="password" required
-                       class="block w-full rounded-lg border-none bg-[#f4f7fb] pl-4 pr-10 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#21a650]">
-                <!-- Tombol Mata -->
-                <button type="button" onclick="togglePassword('password')" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none">
-                    <svg id="icon-password" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                    </svg>
-                </button>
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label for="password" class="mb-1.5 block text-xs font-semibold text-white/90 uppercase tracking-wider">Password</label>
+                <div class="relative">
+                    <input id="password" type="password" name="password" required
+                           class="input-field block w-full rounded-xl py-2.5 pl-4 pr-10 text-sm focus:outline-none focus:ring-0">
+                    <!-- Tombol Mata -->
+                    <button type="button" onclick="togglePassword('password')" class="absolute inset-y-0 right-0 px-3 flex items-center text-white/50 hover:text-white transition">
+                        <svg id="icon-password" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        </svg>
+                    </button>
+                </div>
             </div>
-            @error('password') <span class="text-red-300 text-xs mt-1 block">{{ $message }}</span> @enderror
-        </div>
-        
-        <!-- Konfirmasi Password dengan Fitur Mata -->
-        <div>
-            <label for="password_confirmation" class="mb-1 block text-xs font-semibold text-white drop-shadow-sm">Konfirmasi</label>
-            <div class="relative">
-                <input id="password_confirmation" type="password" name="password_confirmation" required
-                       class="block w-full rounded-lg border-none bg-[#f4f7fb] pl-4 pr-10 py-2.5 text-gray-900 focus:ring-2 focus:ring-[#21a650]">
-                <!-- Tombol Mata -->
-                <button type="button" onclick="togglePassword('password_confirmation')" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none">
-                    <svg id="icon-password_confirmation" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                    </svg>
-                </button>
+            
+            <!-- Konfirmasi Password dengan Fitur Mata -->
+            <div>
+                <label for="password_confirmation" class="mb-1.5 block text-xs font-semibold text-white/90 uppercase tracking-wider">Konfirmasi</label>
+                <div class="relative">
+                    <input id="password_confirmation" type="password" name="password_confirmation" required
+                           class="input-field block w-full rounded-xl py-2.5 pl-4 pr-10 text-sm focus:outline-none focus:ring-0">
+                    <!-- Tombol Mata -->
+                    <button type="button" onclick="togglePassword('password_confirmation')" class="absolute inset-y-0 right-0 px-3 flex items-center text-white/50 hover:text-white transition">
+                        <svg id="icon-password_confirmation" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
+        @error('password') <span class="text-red-400 font-medium text-xs block -mt-2">{{ $message }}</span> @enderror
 
         <!-- Tombol Daftar -->
-        <div class="pt-3">
-            <button type="submit" class="w-full rounded-lg bg-[#21a650] py-3 text-sm font-bold text-white transition hover:bg-[#1d8f45]">
-                Daftar
+        <div class="pt-4 pb-2">
+            <button type="submit" class="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition-all hover:scale-[1.02] hover:shadow-emerald-500/50">
+                Buat Akun Baru
             </button>
         </div>
 
         <!-- Link ke Login -->
-        <div class="mt-4 text-center text-xs font-medium text-white drop-shadow-sm">
-            Sudah punya akun? <a href="{{ route('login') }}" class="font-bold hover:underline">Masuk di sini</a>
+        <div class="text-center text-xs font-medium text-white/80">
+            Sudah punya akun? <a href="{{ route('login') }}" class="font-bold text-emerald-300 hover:text-emerald-100 hover:underline transition">Masuk di sini</a>
         </div>
     </form>
 

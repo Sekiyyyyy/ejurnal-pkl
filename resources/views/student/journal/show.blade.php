@@ -25,15 +25,15 @@
                 <div class="w-full md:w-1/3">
                     @if($progress < 100)
                         <button disabled class="w-full bg-gray-300 text-gray-600 font-semibold py-3 px-4 rounded-lg cursor-not-allowed text-center">
-                            🔒 Lengkapi Data Untuk Cetak
+                            <i class="fa-solid fa-lock mr-2"></i> Lengkapi Data Untuk Cetak
                         </button>
                     @elseif(!$hasActiveTemplate)
                         <button disabled class="w-full bg-gray-300 text-gray-600 font-semibold py-3 px-4 rounded-lg cursor-not-allowed text-center">
-                            🔒 Template Belum Di-upload
+                            <i class="fa-solid fa-lock mr-2"></i> Template Belum Di-upload
                         </button>
                     @else
                         <a href="{{ route('journal.export', $journal->id) }}" class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow transition text-center">
-                            ⬇️ Cetak Jurnal
+                            <i class="fa-solid fa-download mr-2"></i> Cetak Jurnal
                         </a>
                     @endif
                 </div>
@@ -47,7 +47,7 @@
                 @if($journal->instructor_rejection_note)
                     <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm">
                         <div class="flex items-start">
-                            <div class="flex-shrink-0">❌</div>
+                            <div class="flex-shrink-0"><i class="fa-solid fa-circle-xmark text-red-500 text-2xl"></i></div>
                             <div class="ml-3">
                                 <h3 class="text-sm font-bold text-red-800">Bukti Penilaian Akhir Ditolak Admin</h3>
                                 <div class="mt-1 text-sm text-red-700">
@@ -62,7 +62,7 @@
                 @if($journal->teacher_rejection_note)
                     <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm">
                         <div class="flex items-start">
-                            <div class="flex-shrink-0">❌</div>
+                            <div class="flex-shrink-0"><i class="fa-solid fa-circle-xmark text-red-500 text-2xl"></i></div>
                             <div class="ml-3">
                                 <h3 class="text-sm font-bold text-red-800">Bukti Monitoring Guru Ditolak Admin</h3>
                                 <div class="mt-1 text-sm text-red-700">
@@ -77,7 +77,7 @@
                 @foreach($journal->weeklyApprovals->where('is_rejected', true) as $wa)
                     <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm">
                         <div class="flex items-start">
-                            <div class="flex-shrink-0">❌</div>
+                            <div class="flex-shrink-0"><i class="fa-solid fa-circle-xmark text-red-500 text-2xl"></i></div>
                             <div class="ml-3">
                                 <h3 class="text-sm font-bold text-red-800">Bukti ACC Mingguan (Minggu Ke-{{ $wa->week_number }}) Ditolak Admin</h3>
                                 <div class="mt-1 text-sm text-red-700">
@@ -94,7 +94,7 @@
         <!-- Alert Dinamis (SUDUT PANDANG SISWA) -->
         @if($progress < 100)
             <div class="mt-4 bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 text-sm rounded-lg shadow-sm flex items-center gap-2">
-                <span>ℹ️</span>
+                <span><i class="fa-solid fa-circle-info text-blue-500 text-xl"></i></span>
                 <div>
                     <strong>Status Jurnal:</strong> 
                     @if(!$isProfileFilled || !$isDataPklFilled || !$isDailyFilled || !$isTtdFilled)
@@ -108,7 +108,7 @@
             </div>
         @elseif(!$hasActiveTemplate)
             <div class="mt-4 bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 text-sm rounded-lg shadow-sm">
-                ⚠️ <strong>Informasi:</strong> Jurnal Anda sudah 100%, namun tombol cetak belum bisa diklik karena format dokumen dari sekolah belum tersedia.
+                <i class="fa-solid fa-circle-exclamation text-yellow-600 mr-1 text-lg"></i> <strong>Informasi:</strong> Jurnal Anda sudah 100%, namun tombol cetak belum bisa diklik karena format dokumen dari sekolah belum tersedia.
             </div>
         @endif
 
@@ -130,7 +130,7 @@
                     <h3 class="text-lg font-bold text-gray-900">Biodata Diri</h3>
                     <p class="text-sm text-gray-500 mt-1">Identitas siswa dan orang tua</p>
                     <div class="mt-3 text-sm font-semibold {{ $isProfileFilled ? 'text-green-600' : 'text-sky-600' }}">
-                        {{ $isProfileFilled ? '✓ Biodata lengkap' : '⚠ Belum lengkap' }}
+                        @if($isProfileFilled) <i class="fa-solid fa-check mr-1"></i> Biodata lengkap @else <i class="fa-solid fa-triangle-exclamation mr-1"></i> Belum lengkap @endif
                     </div>
                 </a>
 
@@ -138,7 +138,7 @@
                     <h3 class="text-lg font-bold text-gray-900">Data PKL</h3>
                     <p class="text-sm text-gray-500 mt-1">Tempat PKL, Instruktur, Pembimbing</p>
                     <div class="mt-3 text-sm font-semibold {{ $isDataPklFilled ? 'text-green-600' : 'text-orange-500' }}">
-                        {{ $isDataPklFilled ? '✓ Sudah lengkap' : '⚠ Belum lengkap' }}
+                        @if($isDataPklFilled) <i class="fa-solid fa-check mr-1"></i> Sudah lengkap @else <i class="fa-solid fa-triangle-exclamation mr-1"></i> Belum lengkap @endif
                     </div>
                 </a>
 
@@ -146,7 +146,7 @@
                     <h3 class="text-lg font-bold text-gray-900">Kehadiran & Kegiatan</h3>
                     <p class="text-sm text-gray-500 mt-1">Absensi harian dan logbook aktivitas</p>
                     <div class="mt-3 text-sm font-semibold {{ $isDailyApproved ? 'text-green-600' : ($isDailyFilled ? 'text-blue-600' : 'text-emerald-600') }}">
-                        {{ $isDailyApproved ? '✓ Telah di-ACC sepenuhnya' : ($isDailyFilled ? '✓ Sesuai periode (Menunggu ACC)' : '⚠ Belum lengkap / kurang') }}
+                        @if($isDailyApproved) <i class="fa-solid fa-check mr-1"></i> Telah di-ACC sepenuhnya @elseif($isDailyFilled) <i class="fa-solid fa-check mr-1"></i> Sesuai periode (Menunggu ACC) @else <i class="fa-solid fa-triangle-exclamation mr-1"></i> Belum lengkap / kurang @endif
                     </div>
                 </a>
 
@@ -154,7 +154,7 @@
                     <h3 class="text-lg font-bold text-gray-900">Tanda Tangan</h3>
                     <p class="text-sm text-gray-500 mt-1">Upload paraf dan tanda tangan</p>
                     <div class="mt-3 text-sm font-semibold {{ $isTtdFilled ? 'text-green-600' : 'text-red-500' }}">
-                        {{ $isTtdFilled ? '✓ Tanda tangan lengkap' : '⚠ Masih ada gambar yang kosong' }}
+                        @if($isTtdFilled) <i class="fa-solid fa-check mr-1"></i> Tanda tangan lengkap @else <i class="fa-solid fa-triangle-exclamation mr-1"></i> Masih ada gambar yang kosong @endif
                     </div>
                 </a>
 
@@ -170,13 +170,13 @@
                     <p class="text-sm text-gray-500 mt-1">Lembar observasi dan nilai akhir</p>
                     <div class="mt-3 text-sm font-semibold {{ $totalPenilaianCriteria == 0 ? 'text-rose-600' : ($isPenilaianFilled ? 'text-green-600' : ($answeredPenilaianCount > 0 ? 'text-orange-600' : 'text-rose-600')) }}">
                         @if($totalPenilaianCriteria == 0)
-                            ⚠ Belum ada format penilaian
+                            <i class="fa-solid fa-triangle-exclamation mr-1"></i> Belum ada format penilaian
                         @elseif($isPenilaianFilled)
-                            ✓ Sudah dinilai lengkap
+                            <i class="fa-solid fa-check mr-1"></i> Sudah dinilai lengkap
                         @elseif($answeredPenilaianCount > 0)
-                            ⚠ Sedang dinilai Instruktur ({{ $answeredPenilaianCount }}/{{ $totalPenilaianCriteria }})
+                            <i class="fa-solid fa-triangle-exclamation mr-1"></i> Sedang dinilai Instruktur ({{ $answeredPenilaianCount }}/{{ $totalPenilaianCriteria }})
                         @else
-                            ⚠ Menunggu penilaian Instruktur
+                            <i class="fa-solid fa-triangle-exclamation mr-1"></i> Menunggu penilaian Instruktur
                         @endif
                     </div>
                 </a>
@@ -193,13 +193,13 @@
                     <p class="text-sm text-gray-500 mt-1">Checklist evaluasi bimbingan</p>
                     <div class="mt-3 text-sm font-semibold {{ $totalMonitoringCriteria == 0 ? 'text-yellow-600' : ($isMonitoringFilled ? 'text-green-600' : ($answeredMonitoringCount > 0 ? 'text-orange-600' : 'text-yellow-600')) }}">
                         @if($totalMonitoringCriteria == 0)
-                            ⚠ Belum ada format monitoring
+                            <i class="fa-solid fa-triangle-exclamation mr-1"></i> Belum ada format monitoring
                         @elseif($isMonitoringFilled)
-                            ✓ Sudah dimonitoring lengkap
+                            <i class="fa-solid fa-check mr-1"></i> Sudah dimonitoring lengkap
                         @elseif($answeredMonitoringCount > 0)
-                            ⚠ Sedang dimonitoring Guru ({{ $answeredMonitoringCount }}/{{ $totalMonitoringCriteria }})
+                            <i class="fa-solid fa-triangle-exclamation mr-1"></i> Sedang dimonitoring Guru ({{ $answeredMonitoringCount }}/{{ $totalMonitoringCriteria }})
                         @else
-                            ⚠ Menunggu monitoring Guru
+                            <i class="fa-solid fa-triangle-exclamation mr-1"></i> Menunggu monitoring Guru
                         @endif
                     </div>
                 </a>
