@@ -14,7 +14,7 @@ class Journal extends Model
         'start_date', 'end_date',
         'student_signature', 'parent_signature', 'instructor_signature', 'instructor_paraf',
         'teacher_signature', 'teacher_live_photo', 'kaprog_signature', 'monitoring_locked_at',
-        'instructor_live_photo'
+        'instructor_live_photo', 'teacher_rejection_note', 'instructor_rejection_note'
     ];
 
     protected function casts(): array

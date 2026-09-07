@@ -160,7 +160,8 @@
 
                 <!-- Card Penilaian Instruktur -->
                 @php
-                    if($totalPenilaianCriteria == 0) $borderPenilaian = 'border-rose-500';
+                    if($journal->instructor_rejection_note) $borderPenilaian = 'border-red-500';
+                    elseif($totalPenilaianCriteria == 0) $borderPenilaian = 'border-rose-500';
                     elseif($isPenilaianFilled) $borderPenilaian = 'border-green-500';
                     elseif($answeredPenilaianCount > 0) $borderPenilaian = 'border-orange-500';
                     else $borderPenilaian = 'border-rose-500';
@@ -168,8 +169,10 @@
                 <a href="{{ route('journal.instructor-assessment', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 {{ $borderPenilaian }}">
                     <h3 class="text-lg font-bold text-gray-900">Penilaian Instruktur</h3>
                     <p class="text-sm text-gray-500 mt-1">Lembar observasi dan nilai akhir</p>
-                    <div class="mt-3 text-sm font-semibold {{ $totalPenilaianCriteria == 0 ? 'text-rose-600' : ($isPenilaianFilled ? 'text-green-600' : ($answeredPenilaianCount > 0 ? 'text-orange-600' : 'text-rose-600')) }}">
-                        @if($totalPenilaianCriteria == 0)
+                    <div class="mt-3 text-sm font-semibold {{ $journal->instructor_rejection_note ? 'text-red-600' : ($totalPenilaianCriteria == 0 ? 'text-rose-600' : ($isPenilaianFilled ? 'text-green-600' : ($answeredPenilaianCount > 0 ? 'text-orange-600' : 'text-rose-600'))) }}">
+                        @if($journal->instructor_rejection_note)
+                            <i class="fa-solid fa-circle-xmark mr-1"></i> Ditolak (Perlu Foto Ulang)
+                        @elseif($totalPenilaianCriteria == 0)
                             <i class="fa-solid fa-triangle-exclamation mr-1"></i> Belum ada format penilaian
                         @elseif($isPenilaianFilled)
                             <i class="fa-solid fa-check mr-1"></i> Sudah dinilai lengkap
@@ -183,7 +186,8 @@
 
                 <!-- Card Monitoring Guru -->
                 @php
-                    if($totalMonitoringCriteria == 0) $borderMonitoring = 'border-yellow-500';
+                    if($journal->teacher_rejection_note) $borderMonitoring = 'border-red-500';
+                    elseif($totalMonitoringCriteria == 0) $borderMonitoring = 'border-yellow-500';
                     elseif($isMonitoringFilled) $borderMonitoring = 'border-green-500';
                     elseif($answeredMonitoringCount > 0) $borderMonitoring = 'border-orange-500';
                     else $borderMonitoring = 'border-yellow-500';
@@ -191,8 +195,10 @@
                 <a href="{{ route('journal.monitoring', $journal->id) }}" class="block bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition border-l-4 {{ $borderMonitoring }}">
                     <h3 class="text-lg font-bold text-gray-900">Monitoring Guru</h3>
                     <p class="text-sm text-gray-500 mt-1">Checklist evaluasi bimbingan</p>
-                    <div class="mt-3 text-sm font-semibold {{ $totalMonitoringCriteria == 0 ? 'text-yellow-600' : ($isMonitoringFilled ? 'text-green-600' : ($answeredMonitoringCount > 0 ? 'text-orange-600' : 'text-yellow-600')) }}">
-                        @if($totalMonitoringCriteria == 0)
+                    <div class="mt-3 text-sm font-semibold {{ $journal->teacher_rejection_note ? 'text-red-600' : ($totalMonitoringCriteria == 0 ? 'text-yellow-600' : ($isMonitoringFilled ? 'text-green-600' : ($answeredMonitoringCount > 0 ? 'text-orange-600' : 'text-yellow-600'))) }}">
+                        @if($journal->teacher_rejection_note)
+                            <i class="fa-solid fa-circle-xmark mr-1"></i> Ditolak (Perlu Foto Ulang)
+                        @elseif($totalMonitoringCriteria == 0)
                             <i class="fa-solid fa-triangle-exclamation mr-1"></i> Belum ada format monitoring
                         @elseif($isMonitoringFilled)
                             <i class="fa-solid fa-check mr-1"></i> Sudah dimonitoring lengkap

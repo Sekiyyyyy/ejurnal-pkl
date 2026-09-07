@@ -55,9 +55,9 @@ class JournalController extends Controller
             $totalDays = $startDate->diffInDays($endDate) + 1;
             
             $activities = $journal->dailyActivities()
-                                  ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-                                  ->get();
-                                  
+                                ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+                                ->get();
+                                
             $recordedDays = $activities->count();
             $approvedDays = $activities->where('is_approved', true)->count();
             
@@ -75,7 +75,7 @@ class JournalController extends Controller
         }
         $totalMonitoringCriteria = $monitoringTargetIds->count();
         $answeredMonitoringCount = JournalAssessment::where('journal_id', $journal->id)->whereIn('assessment_id', $monitoringTargetIds)->count();
-        $isMonitoringFilled = ($totalMonitoringCriteria > 0 && $answeredMonitoringCount >= $totalMonitoringCriteria);
+        $isMonitoringFilled = ($totalMonitoringCriteria > 0 && $answeredMonitoringCount >= $totalMonitoringCriteria && empty($journal->teacher_rejection_note));
 
         // 2. PENILAIAN INSTRUKTUR (Hitung akurat hanya soal asli, abaikan header)
         $allPenilaian = Assessment::where('major_id', $majorId)->where('category', '!=', 'monitoring')->with('children')->get();
@@ -85,7 +85,7 @@ class JournalController extends Controller
         }
         $totalPenilaianCriteria = $penilaianTargetIds->count();
         $answeredPenilaianCount = JournalAssessment::where('journal_id', $journal->id)->whereIn('assessment_id', $penilaianTargetIds)->count();
-        $isPenilaianFilled = ($totalPenilaianCriteria > 0 && $answeredPenilaianCount >= $totalPenilaianCriteria);
+        $isPenilaianFilled = ($totalPenilaianCriteria > 0 && $answeredPenilaianCount >= $totalPenilaianCriteria && empty($journal->instructor_rejection_note));
 
         $isTtdFilled = !empty($journal->student_signature) && !empty($journal->parent_signature) && !empty($journal->kaprog_signature);
 
@@ -136,7 +136,7 @@ class JournalController extends Controller
             if($m->children->count() == 0) { $monitoringTargetIds->push($m->id); }
         }
         $answeredMonitoringCount = JournalAssessment::where('journal_id', $journal->id)->whereIn('assessment_id', $monitoringTargetIds)->count();
-        $isMonitoringFilled = ($monitoringTargetIds->count() > 0 && $answeredMonitoringCount >= $monitoringTargetIds->count());
+        $isMonitoringFilled = ($monitoringTargetIds->count() > 0 && $answeredMonitoringCount >= $monitoringTargetIds->count() && empty($journal->teacher_rejection_note));
 
         // 2. PENILAIAN INSTRUKTUR (Hitungan Akurat)
         $allPenilaian = Assessment::where('major_id', $majorId)->where('category', '!=', 'monitoring')->with('children')->get();
@@ -145,7 +145,7 @@ class JournalController extends Controller
             if($p->children->count() == 0) { $penilaianTargetIds->push($p->id); }
         }
         $answeredPenilaianCount = JournalAssessment::where('journal_id', $journal->id)->whereIn('assessment_id', $penilaianTargetIds)->count();
-        $isPenilaianFilled = ($penilaianTargetIds->count() > 0 && $answeredPenilaianCount >= $penilaianTargetIds->count());
+        $isPenilaianFilled = ($penilaianTargetIds->count() > 0 && $answeredPenilaianCount >= $penilaianTargetIds->count() && empty($journal->instructor_rejection_note));
         
         $isTtdFilled = !empty($journal->student_signature) && !empty($journal->parent_signature) && !empty($journal->kaprog_signature);
 

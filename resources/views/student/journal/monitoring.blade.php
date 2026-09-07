@@ -107,8 +107,7 @@
                                 <strong>Verifikasi Guru:</strong> Silakan bubuhkan tanda tangan dan ambil foto wajah secara langsung (Live Camera) sebagai bukti sah pengisian instrumen. Form akan terkunci permanen setelah disubmit.
                             </p>
                         </div>
-                        
-                        <x-live-authenticator idPrefix="monitoring-auth" formId="form-monitoring" cameraHelperText="Wajib ambil foto wajah secara live BERSAMA guru pembimbing." />
+                        <x-live-authenticator idPrefix="monitoring-auth" formId="form-monitoring" signatureLabel="Tanda Tangan" cameraHelperText="Wajib ambil foto wajah secara live BERSAMA guru pembimbing." />
 
                         <div class="flex justify-end mt-6 pt-4 border-t border-gray-200">
                             <x-primary-button class="bg-blue-600 hover:bg-blue-700">

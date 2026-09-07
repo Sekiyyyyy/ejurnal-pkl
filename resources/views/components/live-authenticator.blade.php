@@ -1,4 +1,4 @@
-@props(['idPrefix' => 'auth', 'submitButtonId' => 'btn-submit', 'formId' => 'form-auth', 'cameraHelperText' => 'Wajib foto bersama.'])
+@props(['idPrefix' => 'auth', 'submitButtonId' => 'btn-submit', 'formId' => 'form-auth', 'cameraHelperText' => 'Wajib foto bersama.', 'signatureLabel' => 'Tanda Tangan / Paraf'])
 
 <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Live Authenticator</h3>
@@ -6,7 +6,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Digital Signature -->
         <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tanda Tangan / Paraf</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $signatureLabel }}</label>
             <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 overflow-hidden touch-none relative">
                 <canvas id="{{ $idPrefix }}-signature-pad" class="w-full h-48 cursor-crosshair"></canvas>
                 <div class="absolute top-2 right-2 flex space-x-2 z-10">
@@ -160,7 +160,7 @@ document.addEventListener("DOMContentLoaded", function() {
         form.addEventListener('submit', function(e) {
             if (signaturePad.isEmpty()) {
                 e.preventDefault();
-                alert("Harap isi tanda tangan/paraf!");
+                alert("Harap isi {{ strtolower($signatureLabel) }}!");
                 return false;
             }
             if (!photoInput.value) {

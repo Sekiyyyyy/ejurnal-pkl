@@ -246,6 +246,54 @@
                                 </div>
                             </div>
                             
+                            <!-- Lembar Observasi -->
+                            <h4 class="font-bold text-lg text-gray-800 mb-4 mt-8">Lembar Observasi</h4>
+                            @php
+                                $obsPoints = \App\Models\Assessment::where('major_id', $student->major_id)
+                                    ->where('category', 'observation_point')
+                                    ->whereNull('parent_id')
+                                    ->with('children')
+                                    ->orderBy('order_number')
+                                    ->get();
+                                $existing = $journal->assessments->keyBy('assessment_id');
+                            @endphp
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                @foreach($obsPoints as $index => $point)
+                                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-5">
+                                        <h5 class="font-bold text-md text-gray-800 mb-4">{{ $index + 1 }}. {{ $point->name }}</h5>
+                                        <div class="space-y-3 mb-4">
+                                            @foreach($point->children as $child)
+                                                <div class="flex items-start justify-between border-b border-gray-100 pb-2 last:border-0 last:pb-0">
+                                                    <div class="text-sm text-gray-700 pr-4">
+                                                        @if($point->order_number == 3)
+                                                            {{ optional($existing[$child->id] ?? null)->description ?: 'Kompetensi tidak diisi' }}
+                                                        @else
+                                                            {{ $child->name }}
+                                                        @endif
+                                                    </div>
+                                                    <div class="flex-shrink-0">
+                                                        @if(optional($existing[$child->id] ?? null)->is_yes === 1)
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Ya</span>
+                                                        @elseif(optional($existing[$child->id] ?? null)->is_yes === 0)
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Tidak</span>
+                                                        @else
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">-</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        <div class="bg-white border border-gray-100 rounded-lg p-3">
+                                            <p class="text-xs font-bold text-gray-500 uppercase mb-1">Catatan Instruktur</p>
+                                            <p class="text-sm text-gray-700 italic">
+                                                "{{ optional($existing[$point->id] ?? null)->description ?: 'Tidak ada catatan.' }}"
+                                            </p>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                            
                             <!-- Table Nilai -->
                             <h4 class="font-bold text-lg text-gray-800 mb-4">Rincian Nilai Aspek</h4>
                             <div class="overflow-hidden border border-gray-200 rounded-xl shadow-sm">
@@ -258,9 +306,11 @@
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-100">
-                                        @forelse($journal->assessments as $assessment)
+                                        @forelse($journal->assessments->whereNotNull('score') as $assessment)
                                             <tr class="hover:bg-gray-50">
-                                                <td class="px-6 py-4 font-medium text-gray-900">{{ $assessment->assessment_aspect }}</td>
+                                                <td class="px-6 py-4 font-medium text-gray-900">
+                                                    {{ $assessment->assessment->category == 'grade_custom' ? $assessment->description : $assessment->assessment->name }}
+                                                </td>
                                                 <td class="px-6 py-4 text-center">
                                                     <span class="inline-block px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg font-bold">
                                                         {{ $assessment->score }}

@@ -139,11 +139,11 @@
                             @endif
                         </div>
                     @else
-                        <!-- BAGIAN 5: LIVE AUTHENTICATOR -->
                         <div class="mt-8 pt-4 border-t">
                             <h3 class="text-lg font-bold text-gray-900 mb-4">E. Bukti Pengesahan Instruktur</h3>
-                            <x-live-authenticator idPrefix="final-assess" formId="form-assessment" cameraHelperText="Wajib ambil foto wajah secara live BERSAMA instruktur PKL." />
+                            <x-live-authenticator idPrefix="final-assess" formId="form-assessment" signatureLabel="Tanda Tangan" cameraHelperText="Wajib ambil foto wajah secara live BERSAMA instruktur PKL." />
                         </div>
+
 
                         <div class="border-t pt-4 flex justify-end">
                             <x-primary-button class="text-lg px-6 py-3 bg-rose-600 hover:bg-rose-700">
