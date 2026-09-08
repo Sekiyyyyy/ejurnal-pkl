@@ -191,6 +191,12 @@ class StudentController extends Controller
         \App\Models\WeeklyApproval::where('journal_id', $journal->id)->delete();
 
         $journal->update([
+            'company_name' => null,
+            'company_address' => null,
+            'start_date' => null,
+            'end_date' => null,
+            'instructor_name' => null,
+            'teacher_name' => null,
             'student_signature' => null,
             'parent_signature' => null,
             'instructor_signature' => null,
@@ -204,7 +210,7 @@ class StudentController extends Controller
             'grade_pdf_path' => null,
         ]);
 
-        return back()->with('success', 'Seluruh progress Jurnal PKL Tahap '.$journal->phase.' berhasil di-reset ke kondisi awal (termasuk foto/TTD di storage).');
+        return back()->with('success', 'Seluruh progress Jurnal PKL Tahap '.$journal->phase.' berhasil di-reset ke kondisi awal (termasuk Data PKL dan foto/TTD di storage).');
     }
 
     public function rejectWeeklyApproval(Request $request, $id)
