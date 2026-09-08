@@ -11,6 +11,20 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h3 class="text-lg font-bold mb-4">Rekap Kegiatan Minggu ke-{{ $weekNumber }} Tahun {{ $year }}</h3>
                     
+                    @if(isset($availableWeeks) && $availableWeeks->count() > 1)
+                        <div class="mb-6">
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 font-medium">Pilih minggu yang akan di-ACC:</p>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($availableWeeks as $week)
+                                    <a href="{{ route('journal.weekly-approval.show', ['id' => $journal->id, 'week' => $week]) }}" 
+                                       class="px-4 py-2 rounded-md font-semibold text-sm transition-colors {{ $week == $weekNumber ? 'bg-indigo-600 text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600' }}">
+                                        Minggu ke-{{ $week }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="overflow-x-auto mb-6">
                         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">

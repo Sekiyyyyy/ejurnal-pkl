@@ -303,15 +303,23 @@ class JournalController extends Controller
             $activityDate = \Carbon\Carbon::parse($date->date)->startOfWeek();
             return $startDate->diffInWeeks($activityDate) + 1;
         });
+        
+        $availableWeeks = $groupedActivities->keys()->sort();
 
-        // Get the first group to approve
-        $currentWeekGroup = $groupedActivities->keys()->first();
+        // Get the requested week or fallback to the first group
+        $requestedWeek = $request->query('week');
+        if ($requestedWeek && $groupedActivities->has($requestedWeek)) {
+            $currentWeekGroup = $requestedWeek;
+        } else {
+            $currentWeekGroup = $groupedActivities->keys()->first();
+        }
+        
         $activitiesToApprove = $groupedActivities[$currentWeekGroup];
         
         $weekNumber = $currentWeekGroup;
         $year = \Carbon\Carbon::parse($activitiesToApprove->first()->date)->format('Y');
 
-        return view('student.journal.weekly-approval', compact('journal', 'activitiesToApprove', 'weekNumber', 'year'));
+        return view('student.journal.weekly-approval', compact('journal', 'activitiesToApprove', 'weekNumber', 'year', 'availableWeeks'));
     }
 
     public function weeklyApprovalStore(Request $request, $id)
