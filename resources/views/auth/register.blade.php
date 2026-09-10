@@ -23,6 +23,7 @@
         <div>
             <label for="nisn" class="mb-1.5 block text-xs font-semibold text-white/90 uppercase tracking-wider">NISN</label>
             <input id="nisn" type="text" name="nisn" value="{{ old('nisn') }}" required
+                   maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                    class="input-field block w-full rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:ring-0">
             @error('nisn') <span class="text-red-400 font-medium text-xs mt-1 block">{{ $message }}</span> @enderror
         </div>
