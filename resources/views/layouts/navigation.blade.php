@@ -20,28 +20,7 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
-                    <!-- KHUSUS SUPER ADMIN -->
-                    @if(Auth::user()->role === 'super_admin')
-                        <x-nav-link :href="route('admin.majors.index')" :active="request()->routeIs('admin.majors.*')">
-                            {{ __('Manajemen Jurusan') }}
-                        </x-nav-link>
 
-                        <x-nav-link :href="route('admin.students.index')" :active="request()->routeIs('admin.students.*')">
-                            {{ __('Manajemen Siswa') }}
-                        </x-nav-link>
-
-                        <x-nav-link :href="route('admin.kaprodi.index')" :active="request()->routeIs('admin.kaprodi.*')">
-                            {{ __('Manajemen Kaprodi') }}
-                        </x-nav-link>
-
-                        <x-nav-link :href="route('admin.templates.index')" :active="request()->routeIs('admin.templates.*')">
-                            {{ __('Manajemen Template') }}
-                        </x-nav-link>
-
-                        <x-nav-link :href="route('admin.assessments.index')" :active="request()->routeIs('admin.assessments.*')">
-                            {{ __('Master Penilaian') }}
-                        </x-nav-link>
-                    @endif
 
                     <!-- KHUSUS SISWA -->
                     @if(Auth::user()->role === 'student')
@@ -57,11 +36,12 @@
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                        <button class="inline-flex items-center px-4 py-2 border border-indigo-100 shadow-sm text-sm leading-4 font-bold rounded-full text-indigo-700 bg-indigo-50 hover:bg-indigo-100 hover:border-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                            <i class="fa-solid fa-user-circle mr-2 text-indigo-400 text-base"></i>
                             <div>{{ Auth::user()->name }}</div>
 
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            <div class="ms-2">
+                                <svg class="fill-current h-4 w-4 opacity-70" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                 </svg>
                             </div>
@@ -70,8 +50,9 @@
 
                     <x-slot name="content">
                         @if(Auth::user()->role === 'kaprodi')
-                            <x-dropdown-link :href="route('kaprodi.profile.edit')">
-                                {{ __('Profil Saya') }}
+                            <x-dropdown-link :href="route('kaprodi.profile.edit')" class="font-bold text-indigo-600 flex items-center justify-between">
+                                <span><i class="fa-solid fa-user-pen mr-1.5"></i> {{ __('Pengaturan TTD') }}</span>
+                                <span class="flex h-2 w-2 rounded-full bg-red-500"></span>
                             </x-dropdown-link>
                         @else
                             <x-dropdown-link :href="route('profile.edit')">
@@ -115,28 +96,7 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
 
-            <!-- KHUSUS SUPER ADMIN -->
-            @if(Auth::user()->role === 'super_admin')
-                <x-responsive-nav-link :href="route('admin.majors.index')" :active="request()->routeIs('admin.majors.*')">
-                    {{ __('Manajemen Jurusan') }}
-                </x-responsive-nav-link>
 
-                <x-responsive-nav-link :href="route('admin.students.index')" :active="request()->routeIs('admin.students.*')">
-                    {{ __('Manajemen Siswa') }}
-                </x-responsive-nav-link>
-
-                <x-responsive-nav-link :href="route('admin.kaprodi.index')" :active="request()->routeIs('admin.kaprodi.*')">
-                    {{ __('Manajemen Kaprodi') }}
-                </x-responsive-nav-link>
-
-                <x-responsive-nav-link :href="route('admin.templates.index')" :active="request()->routeIs('admin.templates.*')">
-                    {{ __('Manajemen Template') }}
-                </x-responsive-nav-link>
-
-                <x-responsive-nav-link :href="route('admin.assessments.index')" :active="request()->routeIs('admin.assessments.*')">
-                    {{ __('Master Penilaian') }}
-                </x-responsive-nav-link>
-            @endif
 
             <!-- KHUSUS SISWA -->
             @if(Auth::user()->role === 'student')
@@ -156,8 +116,9 @@
 
             <div class="mt-3 space-y-1">
                 @if(Auth::user()->role === 'kaprodi')
-                    <x-responsive-nav-link :href="route('kaprodi.profile.edit')">
-                        {{ __('Profil Saya') }}
+                    <x-responsive-nav-link :href="route('kaprodi.profile.edit')" class="font-bold text-indigo-600 flex items-center justify-between pr-4">
+                        <span><i class="fa-solid fa-user-pen mr-2"></i> {{ __('Pengaturan Tanda Tangan') }}</span>
+                        <span class="flex h-2.5 w-2.5 rounded-full bg-red-500"></span>
                     </x-responsive-nav-link>
                 @else
                     <x-responsive-nav-link :href="route('profile.edit')">

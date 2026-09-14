@@ -22,6 +22,7 @@ class ProfileController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'nip' => 'nullable|string|max:50',
+            'signature_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'signature_base64' => 'nullable|string',
         ]);
 
@@ -30,14 +31,18 @@ class ProfileController extends Controller
             'nip' => $request->nip,
         ];
 
-        if ($request->filled('signature_base64')) {
+        if ($request->hasFile('signature_file')) {
+            if ($kaprodi->signature && Storage::disk('public')->exists($kaprodi->signature)) {
+                Storage::disk('public')->delete($kaprodi->signature);
+            }
+            $filePath = $request->file('signature_file')->store('signatures', 'public');
+            $data['signature'] = $filePath;
+        } elseif ($request->filled('signature_base64')) {
             if ($kaprodi->signature && Storage::disk('public')->exists($kaprodi->signature)) {
                 Storage::disk('public')->delete($kaprodi->signature);
             }
             
             $image_parts = explode(";base64,", $request->signature_base64);
-            $image_type_aux = explode("image/", $image_parts[0]);
-            $image_type = $image_type_aux[1] ?? 'png';
             $image_base64 = base64_decode($image_parts[1]);
             
             $fileName = uniqid() . '.png';

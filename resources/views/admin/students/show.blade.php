@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
@@ -661,4 +661,4 @@
         </div>
 
     </div>
-</x-app-layout>
+</x-admin-layout>

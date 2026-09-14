@@ -11,6 +11,7 @@ class Kaprodi extends Model
         'major_id',
         'name',
         'nip',
+        'signature',
     ];
 
     public function user()
