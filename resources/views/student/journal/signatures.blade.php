@@ -62,25 +62,6 @@
                             <input type="hidden" name="parent_signature" id="parent-input">
                         </div>
 
-                        <!-- Tanda Tangan Kepala Program (Kaprog) -->
-                        <div x-data="{ showPad: {{ $journal->kaprog_signature ? 'false' : 'true' }} }" class="border rounded-lg p-4 bg-gray-50">
-                            <h4 class="font-bold text-gray-700 mb-2">Tanda Tangan Kaprog Keahlian</h4>
-                            @if($journal->kaprog_signature)
-                            <div x-show="!showPad" class="mb-3">
-                                <img src="{{ asset('storage/' . $journal->kaprog_signature) }}" alt="Ttd Kaprog" class="h-20 object-contain bg-white border p-1 rounded mb-2">
-                                <button type="button" @click="showPad = true" class="text-xs text-blue-600 hover:underline">Ganti Tanda Tangan</button>
-                            </div>
-                            @endif
-                            
-                            <div x-show="showPad" style="display: none;" class="border-2 border-dashed border-gray-300 rounded-lg bg-white overflow-hidden touch-none relative mb-2">
-                                <canvas id="kaprog-pad" class="w-full h-32 cursor-crosshair"></canvas>
-                                <div class="absolute top-2 right-2 z-10">
-                                    <button type="button" id="clear-kaprog" class="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded shadow">Ulang</button>
-                                </div>
-                            </div>
-                            <input type="hidden" name="kaprog_signature" id="kaprog-input">
-                        </div>
-
                     </div>
 
                     <div class="mt-6 flex justify-end">
@@ -132,7 +113,6 @@
 
         const studentPad = setupSignaturePad('student-pad', 'student-input', 'clear-student');
         const parentPad = setupSignaturePad('parent-pad', 'parent-input', 'clear-parent');
-        const kaprogPad = setupSignaturePad('kaprog-pad', 'kaprog-input', 'clear-kaprog');
     });
     </script>
 </x-app-layout>

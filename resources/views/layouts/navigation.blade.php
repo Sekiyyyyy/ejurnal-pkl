@@ -30,6 +30,10 @@
                             {{ __('Manajemen Siswa') }}
                         </x-nav-link>
 
+                        <x-nav-link :href="route('admin.kaprodi.index')" :active="request()->routeIs('admin.kaprodi.*')">
+                            {{ __('Manajemen Kaprodi') }}
+                        </x-nav-link>
+
                         <x-nav-link :href="route('admin.templates.index')" :active="request()->routeIs('admin.templates.*')">
                             {{ __('Manajemen Template') }}
                         </x-nav-link>
@@ -65,9 +69,15 @@
                     </x-slot>
 
                     <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
+                        @if(Auth::user()->role === 'kaprodi')
+                            <x-dropdown-link :href="route('kaprodi.profile.edit')">
+                                {{ __('Profil Saya') }}
+                            </x-dropdown-link>
+                        @else
+                            <x-dropdown-link :href="route('profile.edit')">
+                                {{ __('Profile') }}
+                            </x-dropdown-link>
+                        @endif
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
@@ -115,6 +125,10 @@
                     {{ __('Manajemen Siswa') }}
                 </x-responsive-nav-link>
 
+                <x-responsive-nav-link :href="route('admin.kaprodi.index')" :active="request()->routeIs('admin.kaprodi.*')">
+                    {{ __('Manajemen Kaprodi') }}
+                </x-responsive-nav-link>
+
                 <x-responsive-nav-link :href="route('admin.templates.index')" :active="request()->routeIs('admin.templates.*')">
                     {{ __('Manajemen Template') }}
                 </x-responsive-nav-link>
@@ -141,9 +155,15 @@
             </div>
 
             <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
+                @if(Auth::user()->role === 'kaprodi')
+                    <x-responsive-nav-link :href="route('kaprodi.profile.edit')">
+                        {{ __('Profil Saya') }}
+                    </x-responsive-nav-link>
+                @else
+                    <x-responsive-nav-link :href="route('profile.edit')">
+                        {{ __('Profile') }}
+                    </x-responsive-nav-link>
+                @endif
 
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">

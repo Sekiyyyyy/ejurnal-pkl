@@ -23,6 +23,10 @@ class ExportController extends Controller
                             ->with(['student.major', 'dailyActivities', 'attendances', 'assessments.assessment'])
                             ->firstOrFail();
 
+        if ($journal->kaprodi_status !== 'APPROVED') {
+            return back()->withErrors(['error' => 'Jurnal belum divalidasi dan disetujui (ACC) oleh Kaprodi.']);
+        }
+
         // 1. CARI TEMPLATE YANG AKTIF BERDASARKAN JURUSAN SISWA
         $studentMajorId = $journal->student->major_id;
         $activeTemplate = \App\Models\Template::where('major_id', $studentMajorId)

@@ -1,0 +1,111 @@
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Manajemen Kaprodi') }}
+        </h2>
+    </x-slot>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            
+            @if(session('success'))
+                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if($errors->any())
+                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                    {{ $errors->first() }}
+                </div>
+            @endif
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Kolom Tambah Kaprodi -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-900 border-b pb-2 mb-4">Tambah Akun Kaprodi</h3>
+                    <form action="{{ route('admin.kaprodi.store') }}" method="POST">
+                        @csrf
+                        <div class="mb-4">
+                            <x-input-label for="name" value="Nama Lengkap & Gelar" />
+                            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" required autofocus />
+                        </div>
+                        <div class="mb-4">
+                            <x-input-label for="nip" value="NIP (Opsional)" />
+                            <x-text-input id="nip" class="block mt-1 w-full" type="text" name="nip" />
+                        </div>
+                        <div class="mb-4">
+                            <x-input-label for="major_id" value="Jurusan yang Dikepalai" />
+                            <select id="major_id" name="major_id" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" required>
+                                <option value="">-- Pilih Jurusan --</option>
+                                @foreach($majors as $major)
+                                    <option value="{{ $major->id }}">{{ $major->code }} - {{ $major->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <x-input-label for="email" value="Email Login" />
+                            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" required />
+                        </div>
+                        <div class="mb-4">
+                            <x-input-label for="password" value="Password" />
+                            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required />
+                        </div>
+                        <x-primary-button class="w-full justify-center">Simpan Akun</x-primary-button>
+                    </form>
+                </div>
+
+                <!-- Kolom Tabel Daftar Kaprodi -->
+                <div class="md:col-span-2 bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-900 border-b pb-2 mb-4">Daftar Akun Kaprodi</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-600 border">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-3 border w-10 text-center">No</th>
+                                    <th class="px-4 py-3 border">Nama</th>
+                                    <th class="px-4 py-3 border">Jurusan</th>
+                                    <th class="px-4 py-3 border">Email</th>
+                                    <th class="px-4 py-3 border w-24 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($kaprodis as $index => $kaprodi)
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="px-4 py-3 border text-center">{{ $index + 1 }}</td>
+                                    <td class="px-4 py-3 border font-bold text-gray-800">
+                                        {{ $kaprodi->name }}
+                                        <div class="text-xs text-gray-500 font-normal">NIP: {{ $kaprodi->nip ?? '-' }}</div>
+                                    </td>
+                                    <td class="px-4 py-3 border font-medium text-gray-900">{{ $kaprodi->major->code ?? '-' }}</td>
+                                    <td class="px-4 py-3 border text-gray-700">{{ $kaprodi->user->email ?? '-' }}</td>
+                                    <td class="px-4 py-3 border text-center">
+                                        <div class="flex justify-center gap-2">
+                                            <a href="{{ route('admin.kaprodi.edit', $kaprodi->id) }}" class="text-blue-600 hover:text-blue-800 font-semibold text-xs bg-blue-100 px-3 py-1 rounded">
+                                                Edit
+                                            </a>
+                                            <form action="{{ route('admin.kaprodi.destroy', $kaprodi->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus akun kaprodi ini?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-800 font-semibold text-xs bg-red-100 px-3 py-1 rounded">
+                                                    Hapus
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="5" class="px-4 py-3 text-center text-gray-500">Belum ada data Kaprodi.</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</x-app-layout>

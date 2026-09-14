@@ -17,6 +17,11 @@ Route::get('/dashboard', function () {
         return redirect()->route('admin.dashboard');
     }
     
+    // Jika Kaprodi
+    if (Auth::user()->role === 'kaprodi') {
+        return redirect()->route('kaprodi.dashboard');
+    }
+    
     // Jika yang login adalah Siswa, instansiasi controller dan jalankan method dashboard
     return app()->make(JournalController::class)->dashboard();
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -38,6 +43,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/jurusan/{id}', [App\Http\Controllers\Admin\MajorController::class, 'update'])->name('majors.update');
 
     Route::delete('/jurusan/{id}', [App\Http\Controllers\Admin\MajorController::class, 'destroy'])->name('majors.destroy');
+
+    // Manajemen Kaprodi
+    Route::get('/kaprodi', [App\Http\Controllers\Admin\KaprodiController::class, 'index'])->name('kaprodi.index');
+    Route::post('/kaprodi', [App\Http\Controllers\Admin\KaprodiController::class, 'store'])->name('kaprodi.store');
+    Route::get('/kaprodi/{id}/edit', [App\Http\Controllers\Admin\KaprodiController::class, 'edit'])->name('kaprodi.edit');
+    Route::put('/kaprodi/{id}', [App\Http\Controllers\Admin\KaprodiController::class, 'update'])->name('kaprodi.update');
+    Route::delete('/kaprodi/{id}', [App\Http\Controllers\Admin\KaprodiController::class, 'destroy'])->name('kaprodi.destroy');
 
     // Manajemen Akun Siswa 
     Route::get('/siswa', [App\Http\Controllers\Admin\StudentController::class, 'index'])->name('students.index');
@@ -68,6 +80,25 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/penilaian/{id}', [App\Http\Controllers\Admin\AssessmentController::class, 'update'])->name('assessments.update');
 
     Route::delete('/penilaian/{id}', [App\Http\Controllers\Admin\AssessmentController::class, 'destroy'])->name('assessments.destroy');
+});
+
+
+// =======================================================
+// 3. GROUP ROUTE KHUSUS KAPRODI
+// =======================================================
+Route::middleware(['auth', 'verified', 'role:kaprodi'])->prefix('kaprodi')->name('kaprodi.')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\Kaprodi\JournalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/profil', [App\Http\Controllers\Kaprodi\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::post('/profil', [App\Http\Controllers\Kaprodi\ProfileController::class, 'update'])->name('profile.update');
+    
+    Route::get('/jurnal/{id}', [App\Http\Controllers\Kaprodi\JournalController::class, 'show'])->name('journal.show');
+    Route::post('/jurnal/{id}/approve', [App\Http\Controllers\Kaprodi\JournalController::class, 'approve'])->name('journal.approve');
+    Route::post('/jurnal/{id}/reject', [App\Http\Controllers\Kaprodi\JournalController::class, 'reject'])->name('journal.reject');
+    
+    // Spesifik Reject
+    Route::post('/jurnal/reject-weekly/{wa_id}', [App\Http\Controllers\Kaprodi\JournalController::class, 'rejectWeeklyApproval'])->name('journal.reject-weekly');
+    Route::post('/jurnal/{id}/reject-final', [App\Http\Controllers\Kaprodi\JournalController::class, 'rejectFinalAssessment'])->name('journal.reject-final');
+    Route::post('/jurnal/{id}/reject-monitoring', [App\Http\Controllers\Kaprodi\JournalController::class, 'rejectMonitoring'])->name('journal.reject-monitoring');
 });
 
 
@@ -108,6 +139,9 @@ Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
 
     // Export Word
     Route::get('/jurnal/{id}/export', [App\Http\Controllers\ExportController::class, 'exportDocx'])->name('journal.export');
+
+    // Ajukan ke Kaprodi
+    Route::post('/jurnal/{id}/submit-kaprodi', [JournalController::class, 'submitToKaprodi'])->name('journal.submit-kaprodi');
 
     // Monitoring Guru (Diisi dari akun siswa)
     Route::get('/jurnal/{id}/monitoring', [JournalController::class, 'editMonitoring'])->name('journal.monitoring');

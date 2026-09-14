@@ -16,6 +16,7 @@ class User extends Authenticatable
     public const ROLE_SUPER_ADMIN = 'super_admin';
     public const ROLE_TEACHER = 'teacher';
     public const ROLE_STUDENT = 'student';
+    public const ROLE_KAPRODI = 'kaprodi';
 
     /**
      * The attributes that are mass assignable.
@@ -38,6 +39,11 @@ class User extends Authenticatable
     public function teacher()
     {
         return $this->hasOne(Teacher::class);
+    }
+
+    public function kaprodi()
+    {
+        return $this->hasOne(Kaprodi::class);
     }
 
     /**

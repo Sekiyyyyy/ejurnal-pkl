@@ -87,7 +87,7 @@ class JournalController extends Controller
         $answeredPenilaianCount = JournalAssessment::where('journal_id', $journal->id)->whereIn('assessment_id', $penilaianTargetIds)->count();
         $isPenilaianFilled = ($totalPenilaianCriteria > 0 && $answeredPenilaianCount >= $totalPenilaianCriteria && empty($journal->instructor_rejection_note));
 
-        $isTtdFilled = !empty($journal->student_signature) && !empty($journal->parent_signature) && !empty($journal->kaprog_signature);
+        $isTtdFilled = !empty($journal->student_signature) && !empty($journal->parent_signature);
 
         $hasActiveTemplate = Template::where('major_id', $student->major_id)
                                     ->where('is_active', true)
@@ -98,10 +98,29 @@ class JournalController extends Controller
             'journal', 'progress', 
             'isProfileFilled', 'isDataPklFilled', 'isDailyFilled', 'isDailyApproved',
             'isMonitoringFilled', 'isPenilaianFilled', 'isTtdFilled',
-            'hasActiveTemplate',
-            'answeredMonitoringCount', 'totalMonitoringCriteria',
-            'answeredPenilaianCount', 'totalPenilaianCriteria'
+            'hasActiveTemplate', 'totalMonitoringCriteria', 'answeredMonitoringCount',
+            'totalPenilaianCriteria', 'answeredPenilaianCount'
         ));
+    }
+
+    public function submitToKaprodi($id)
+    {
+        $student = Auth::user()->student;
+        $journal = Journal::where('id', $id)
+                            ->where('student_id', $student->id)
+                            ->firstOrFail();
+
+        $progress = $this->calculateProgress($journal, $student);
+
+        if ($progress < 100) {
+            return back()->withErrors(['error' => 'Jurnal belum 100% lengkap.']);
+        }
+
+        $journal->update([
+            'kaprodi_status' => 'WAITING_KAPROG'
+        ]);
+
+        return back()->with('success', 'Jurnal berhasil diajukan untuk validasi Kaprodi.');
     }
 
     private function calculateProgress($journal, $student)
@@ -147,7 +166,7 @@ class JournalController extends Controller
         $answeredPenilaianCount = JournalAssessment::where('journal_id', $journal->id)->whereIn('assessment_id', $penilaianTargetIds)->count();
         $isPenilaianFilled = ($penilaianTargetIds->count() > 0 && $answeredPenilaianCount >= $penilaianTargetIds->count() && empty($journal->instructor_rejection_note));
         
-        $isTtdFilled = !empty($journal->student_signature) && !empty($journal->parent_signature) && !empty($journal->kaprog_signature);
+        $isTtdFilled = !empty($journal->student_signature) && !empty($journal->parent_signature);
 
         $progress = 0;
         if ($isProfileFilled) $progress += 15;
@@ -255,7 +274,6 @@ class JournalController extends Controller
         $request->validate([
             'student_signature' => 'nullable|string',
             'parent_signature' => 'nullable|string',
-            'kaprog_signature' => 'nullable|string',
         ]);
         
         $data = [];
@@ -271,12 +289,6 @@ class JournalController extends Controller
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($journal->parent_signature);
             }
             $data['parent_signature'] = $this->saveBase64Image($request->parent_signature, 'signatures');
-        }
-        if ($request->filled('kaprog_signature')) {
-            if ($journal->kaprog_signature && \Illuminate\Support\Facades\Storage::disk('public')->exists($journal->kaprog_signature)) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($journal->kaprog_signature);
-            }
-            $data['kaprog_signature'] = $this->saveBase64Image($request->kaprog_signature, 'signatures');
         }
         
         if(!empty($data)) { $journal->update($data); }

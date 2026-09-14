@@ -32,9 +32,22 @@
                             <i class="fa-solid fa-lock mr-2"></i> Template Belum Di-upload
                         </button>
                     @else
-                        <a href="{{ route('journal.export', $journal->id) }}" class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow transition text-center">
-                            <i class="fa-solid fa-download mr-2"></i> Cetak Jurnal
-                        </a>
+                        @if($journal->kaprodi_status === 'APPROVED')
+                            <a href="{{ route('journal.export', $journal->id) }}" class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow transition text-center">
+                                <i class="fa-solid fa-download mr-2"></i> Cetak Jurnal
+                            </a>
+                        @elseif($journal->kaprodi_status === 'WAITING_KAPROG')
+                            <button disabled class="w-full bg-yellow-400 text-yellow-900 font-bold py-3 px-4 rounded-lg shadow transition text-center cursor-not-allowed">
+                                <i class="fa-solid fa-hourglass-half mr-2"></i> Menunggu Validasi Kaprodi
+                            </button>
+                        @else
+                            <form action="{{ route('journal.submit-kaprodi', $journal->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin semua data sudah benar? Anda tidak bisa mengubah data setelah diajukan ke Kaprodi.');">
+                                @csrf
+                                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow transition text-center">
+                                    <i class="fa-solid fa-paper-plane mr-2"></i> Ajukan Validasi Kaprodi
+                                </button>
+                            </form>
+                        @endif
                     @endif
                 </div>
 
@@ -42,6 +55,21 @@
         </div>
 
         <!-- Rejection Alerts -->
+        @if($journal->kaprodi_rejection_note)
+            <div class="mt-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0"><i class="fa-solid fa-circle-xmark text-red-500 text-2xl"></i></div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-bold text-red-800">Validasi Jurnal Ditolak Kaprodi</h3>
+                        <div class="mt-1 text-sm text-red-700">
+                            <p><strong>Alasan:</strong> {{ $journal->kaprodi_rejection_note }}</p>
+                            <p class="mt-1 font-semibold">Silakan perbaiki data/foto yang salah lalu ajukan kembali.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         @if($journal->instructor_rejection_note || $journal->teacher_rejection_note || $journal->weeklyApprovals->where('is_rejected', true)->count() > 0)
             <div class="mt-6 space-y-3">
                 @if($journal->instructor_rejection_note)
