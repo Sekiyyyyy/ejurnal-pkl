@@ -52,7 +52,14 @@ class JournalController extends Controller
         if ($journal->start_date && $journal->end_date) {
             $startDate = \Carbon\Carbon::parse($journal->start_date);
             $endDate = \Carbon\Carbon::parse($journal->end_date);
-            $totalDays = $startDate->diffInDays($endDate) + 1;
+            $totalDays = 0;
+            $currentDate = $startDate->copy();
+            while ($currentDate->lte($endDate)) {
+                if ($currentDate->isWeekday()) {
+                    $totalDays++;
+                }
+                $currentDate->addDay();
+            }
             
             $activities = $journal->dailyActivities()
                                 ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
@@ -133,7 +140,14 @@ class JournalController extends Controller
         if ($journal->start_date && $journal->end_date) {
             $startDate = \Carbon\Carbon::parse($journal->start_date);
             $endDate = \Carbon\Carbon::parse($journal->end_date);
-            $totalDays = $startDate->diffInDays($endDate) + 1;
+            $totalDays = 0;
+            $currentDate = $startDate->copy();
+            while ($currentDate->lte($endDate)) {
+                if ($currentDate->isWeekday()) {
+                    $totalDays++;
+                }
+                $currentDate->addDay();
+            }
             
             $activities = $journal->dailyActivities()
                                   ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])

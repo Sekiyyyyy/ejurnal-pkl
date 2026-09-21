@@ -23,8 +23,8 @@
                     <h3 class="text-lg font-bold text-gray-900 border-b pb-2 mb-4">A. Data Siswa</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                         <div>
-                            <x-input-label value="Nama Lengkap" />
-                            <x-text-input type="text" class="block mt-1 w-full bg-gray-100" value="{{ $student->name }}" disabled />
+                            <x-input-label for="name" value="Nama Lengkap" />
+                            <x-text-input id="name" name="name" type="text" class="block mt-1 w-full" value="{{ old('name', $student->name) }}" />
                         </div>
                         <div>
                             <x-input-label value="NISN" />
