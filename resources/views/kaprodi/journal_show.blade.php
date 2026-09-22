@@ -91,7 +91,7 @@
                             <i class="fa-solid fa-circle-xmark"></i> Tolak Secara Keseluruhan
                         </h4>
                         <p class="text-sm text-indigo-100/70 mb-4">Gunakan fitur ini hanya jika terdapat kesalahan mayor pada jurnal (status akan diubah menjadi Ditolak).</p>
-                        <form action="{{ route('kaprodi.journal.reject', $journal->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menolak keseluruhan jurnal ini?');">
+                        <form action="{{ route('kaprodi.journal.reject', $journal->id, false) }}" method="POST" onsubmit="return confirm('Yakin ingin menolak keseluruhan jurnal ini?');">
                             @csrf
                             <div class="mb-4">
                                 <textarea name="rejection_note" class="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl text-sm text-white placeholder-slate-400 focus:border-red-400 focus:ring-1 focus:ring-red-400/50 py-3 transition-colors" rows="2" placeholder="Tuliskan alasan penolakan..." required></textarea>
@@ -192,9 +192,26 @@
                             $weeklyApprovals = $journal->weeklyApprovals()->orderBy('week_number', 'asc')->get();
                         @endphp
 
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-2">
-                            <h3 class="font-bold text-slate-800 text-lg">Pemeriksaan Logbook Mingguan</h3>
-                            <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-slate-200">{{ $weeklyApprovals->count() }} Minggu Tercatat</span>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-2">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-lg">Pemeriksaan Logbook Mingguan</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Total {{ $weeklyApprovals->count() }} validasi mingguan tercatat</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm border border-slate-200">{{ $weeklyApprovals->count() }} Minggu Tercatat</span>
+                                @if($weeklyApprovals->isNotEmpty())
+                                    <form action="{{ route('kaprodi.journal.reset-weekly-approvals', $journal->id) }}" 
+                                          method="POST" 
+                                          onsubmit="return confirm('PERINGATAN: Apakah Anda yakin ingin mereset seluruh histori validasi mingguan jurnal ini? Semua file foto live dan paraf instruktur akan dihapus permanen, dan status kegiatan mingguan akan dikembalikan.')">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl border border-rose-200 transition shadow-sm hover:shadow">
+                                            <i class="fa-solid fa-rotate-left"></i>
+                                            Reset Histori Validasi
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                         </div>
 
                         @forelse($weeklyApprovals as $wa)
@@ -224,7 +241,7 @@
                                 <div class="flex flex-col md:flex-row gap-8">
                                     <div class="w-full md:w-1/3">
                                         <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 relative group/img cursor-pointer"
-                                             @click="modalOpen = true; modalImgLive = '{{ asset('storage/' . $wa->instructor_live_photo) }}'; modalImgSignature = '{{ $wa->instructor_paraf ? asset('storage/' . $wa->instructor_paraf) : '' }}'; modalDate = 'Logbook Minggu {{ $wa->week_number }}'; modalRejectUrl = '{{ route('kaprodi.journal.reject-weekly', $wa->id) }}'">
+                                             @click="modalOpen = true; modalImgLive = '{{ asset('storage/' . $wa->instructor_live_photo) }}'; modalImgSignature = '{{ $wa->instructor_paraf ? asset('storage/' . $wa->instructor_paraf) : '' }}'; modalDate = 'Logbook Minggu {{ $wa->week_number }}'; modalRejectUrl = '{{ route('kaprodi.journal.reject-weekly', $wa->id, false) }}'">
                                             
                                             <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                                                 <i class="fa-solid fa-camera"></i> Live Photo
@@ -232,7 +249,16 @@
                                             
                                             <div class="relative rounded-xl overflow-hidden shadow-inner bg-slate-200 h-40">
                                                 @if($wa->instructor_live_photo)
-                                                    <img src="{{ asset('storage/' . $wa->instructor_live_photo) }}" class="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110">
+                                                    <img src="{{ asset('storage/' . $wa->instructor_live_photo) }}" 
+                                                         alt="Live Photo Minggu {{ $wa->week_number }}" 
+                                                         loading="lazy" 
+                                                         decoding="async" 
+                                                         class="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110"
+                                                         onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                                                    <div class="hidden absolute inset-0 flex flex-col items-center justify-center text-slate-400 gap-2 bg-slate-100">
+                                                        <i class="fa-regular fa-image text-3xl"></i>
+                                                        <span class="text-xs font-medium">Foto Tidak Ditemukan</span>
+                                                    </div>
                                                     <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
                                                         <span class="bg-white/20 text-white border border-white/40 px-4 py-2 rounded-lg text-sm font-bold shadow-lg backdrop-blur-md">
                                                             <i class="fa-solid fa-magnifying-glass-plus mr-1"></i> Perbesar
@@ -253,7 +279,7 @@
                                         
                                         @if(!$wa->is_rejected)
                                         <div class="bg-slate-50 border border-slate-100 rounded-2xl p-5 hover:bg-red-50 hover:border-red-100 transition-colors group/btn cursor-pointer"
-                                             @click="rejectModalOpen = true; modalRejectUrl = '{{ route('kaprodi.journal.reject-weekly', $wa->id) }}'">
+                                             @click="rejectModalOpen = true; modalRejectUrl = '{{ route('kaprodi.journal.reject-weekly', $wa->id, false) }}'">
                                             <div class="flex items-center gap-4">
                                                 <div class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover/btn:bg-red-100 group-hover/btn:text-red-500 group-hover/btn:border-red-200 transition-colors">
                                                     <i class="fa-solid fa-xmark"></i>
@@ -295,12 +321,25 @@
                     <!-- TAB NILAI AKHIR -->
                     <div x-show="activeTab === 'nilai'" style="display: none;" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
                         <div class="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm">
-                            <h3 class="font-bold text-slate-800 text-lg border-b border-slate-100 pb-4 mb-6">Pemeriksaan Form Penilaian Instruktur</h3>
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-4 mb-6 gap-3">
+                                <h3 class="font-bold text-slate-800 text-lg">Pemeriksaan Form Penilaian Instruktur</h3>
+                                @if($journal->status === 'COMPLETED' || $journal->instructor_live_photo || $journal->instructor_signature || $journal->assessments->where('assessment.category', '!=', 'monitoring')->count() > 0)
+                                    <form action="{{ route('kaprodi.journal.reset-final-assessment', $journal->id, false) }}" 
+                                          method="POST" 
+                                          onsubmit="return confirm('Reset seluruh nilai akhir instruktur untuk jurnal ini?\n\nNilai dan bukti foto/TTD instruktur akan dihapus total.');">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl border border-rose-200 transition shadow-sm">
+                                            <i class="fa-solid fa-rotate-left"></i> Reset Nilai Akhir
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                             
                             <div class="flex flex-col md:flex-row gap-10">
                                 <div class="w-full md:w-1/3">
                                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 relative group cursor-pointer"
-                                         @click="modalOpen = true; modalImgLive = '{{ asset('storage/' . $journal->instructor_live_photo) }}'; modalImgSignature = '{{ $journal->instructor_signature ? asset('storage/' . $journal->instructor_signature) : '' }}'; modalDate = 'Penilaian Akhir PKL'; modalRejectUrl = '{{ route('kaprodi.journal.reject-final', $journal->id) }}'">
+                                         @click="modalOpen = true; modalImgLive = '{{ asset('storage/' . $journal->instructor_live_photo) }}'; modalImgSignature = '{{ $journal->instructor_signature ? asset('storage/' . $journal->instructor_signature) : '' }}'; modalDate = 'Penilaian Akhir PKL'; modalRejectUrl = '{{ route('kaprodi.journal.reject-final', $journal->id, false) }}'">
                                         
                                         <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                                             <i class="fa-solid fa-camera"></i> Live Photo
@@ -308,7 +347,7 @@
                                         
                                         <div class="relative rounded-xl overflow-hidden shadow-inner bg-slate-200 h-64">
                                             @if($journal->instructor_live_photo)
-                                                <img src="{{ asset('storage/' . $journal->instructor_live_photo) }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                                                <img src="{{ asset('storage/' . $journal->instructor_live_photo) }}" alt="Live Photo Instruktur" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                                                 <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
                                                     <span class="bg-white/20 text-white border border-white/40 px-4 py-2 rounded-lg text-sm font-bold shadow-lg backdrop-blur-md">
                                                         <i class="fa-solid fa-expand mr-1"></i> Lihat Penuh
@@ -329,7 +368,7 @@
                                     
                                     @if(!$journal->instructor_rejection_note)
                                         <div class="bg-slate-50 border border-slate-100 rounded-2xl p-6 hover:bg-red-50 hover:border-red-100 transition-colors group/btn cursor-pointer shadow-sm"
-                                             @click="rejectModalOpen = true; modalRejectUrl = '{{ route('kaprodi.journal.reject-final', $journal->id) }}'">
+                                             @click="rejectModalOpen = true; modalRejectUrl = '{{ route('kaprodi.journal.reject-final', $journal->id, false) }}'">
                                             <div class="flex items-center gap-5">
                                                 <div class="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover/btn:bg-red-100 group-hover/btn:text-red-500 group-hover/btn:border-red-200 transition-colors shadow-sm">
                                                     <i class="fa-solid fa-trash-can text-lg"></i>
@@ -361,12 +400,25 @@
                     <!-- TAB MONITORING GURU -->
                     <div x-show="activeTab === 'monitoring'" style="display: none;" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
                         <div class="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm">
-                            <h3 class="font-bold text-slate-800 text-lg border-b border-slate-100 pb-4 mb-6">Pemeriksaan Form Monitoring Guru</h3>
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-4 mb-6 gap-3">
+                                <h3 class="font-bold text-slate-800 text-lg">Pemeriksaan Form Monitoring Guru</h3>
+                                @if($journal->monitoring_locked_at || $journal->teacher_live_photo || $journal->teacher_signature || $journal->assessments->where('assessment.category', 'monitoring')->count() > 0)
+                                    <form action="{{ route('kaprodi.journal.reset-monitoring', $journal->id, false) }}" 
+                                          method="POST" 
+                                          onsubmit="return confirm('Reset seluruh hasil monitoring guru untuk jurnal ini?\n\nJawaban observasi dan bukti foto/TTD guru pembimbing akan dihapus total.');">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold rounded-xl border border-amber-200 transition shadow-sm">
+                                            <i class="fa-solid fa-rotate-left"></i> Reset Hasil Monitoring
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                             
                             <div class="flex flex-col md:flex-row gap-10">
                                 <div class="w-full md:w-1/3">
                                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 relative group cursor-pointer"
-                                         @click="modalOpen = true; modalImgLive = '{{ asset('storage/' . $journal->teacher_live_photo) }}'; modalImgSignature = '{{ $journal->teacher_signature ? asset('storage/' . $journal->teacher_signature) : '' }}'; modalDate = 'Monitoring Guru Pembimbing'; modalRejectUrl = '{{ route('kaprodi.journal.reject-monitoring', $journal->id) }}'">
+                                         @click="modalOpen = true; modalImgLive = '{{ asset('storage/' . $journal->teacher_live_photo) }}'; modalImgSignature = '{{ $journal->teacher_signature ? asset('storage/' . $journal->teacher_signature) : '' }}'; modalDate = 'Monitoring Guru Pembimbing'; modalRejectUrl = '{{ route('kaprodi.journal.reject-monitoring', $journal->id, false) }}'">
                                         
                                         <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                                             <i class="fa-solid fa-camera"></i> Live Photo Guru
@@ -374,7 +426,7 @@
                                         
                                         <div class="relative rounded-xl overflow-hidden shadow-inner bg-slate-200 h-64">
                                             @if($journal->teacher_live_photo)
-                                                <img src="{{ asset('storage/' . $journal->teacher_live_photo) }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                                                <img src="{{ asset('storage/' . $journal->teacher_live_photo) }}" alt="Live Photo Guru Pembimbing" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                                                 <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
                                                     <span class="bg-white/20 text-white border border-white/40 px-4 py-2 rounded-lg text-sm font-bold shadow-lg backdrop-blur-md">
                                                         <i class="fa-solid fa-expand mr-1"></i> Lihat Penuh
@@ -395,7 +447,7 @@
                                     
                                     @if(!$journal->teacher_rejection_note)
                                         <div class="bg-slate-50 border border-slate-100 rounded-2xl p-6 hover:bg-red-50 hover:border-red-100 transition-colors group/btn cursor-pointer shadow-sm"
-                                             @click="rejectModalOpen = true; modalRejectUrl = '{{ route('kaprodi.journal.reject-monitoring', $journal->id) }}'">
+                                             @click="rejectModalOpen = true; modalRejectUrl = '{{ route('kaprodi.journal.reject-monitoring', $journal->id, false) }}'">
                                             <div class="flex items-center gap-5">
                                                 <div class="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover/btn:bg-red-100 group-hover/btn:text-red-500 group-hover/btn:border-red-200 transition-colors shadow-sm">
                                                     <i class="fa-solid fa-eraser text-lg"></i>

@@ -40,7 +40,16 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app/public'),
+            'root' => env('FILESYSTEM_PUBLIC_ROOT', storage_path('app/public')),
+            'url' => env('APP_URL').'/storage',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        'nfs' => [
+            'driver' => 'local',
+            'root' => env('NFS_STORAGE_PATH', '/mnt/nfs/data-jurnal'),
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
             'throw' => false,
@@ -74,7 +83,7 @@ return [
     */
 
     'links' => [
-        public_path('storage') => storage_path('app/public'),
+        public_path('storage') => env('FILESYSTEM_PUBLIC_ROOT', storage_path('app/public')),
     ],
 
 ];

@@ -128,13 +128,13 @@
                             @if($journal->instructor_signature)
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Tanda Tangan Instruktur</label>
-                                <img src="{{ asset('storage/' . $journal->instructor_signature) }}" alt="Tanda Tangan" class="border rounded max-h-48">
+                                <img src="{{ asset('storage/' . $journal->instructor_signature) }}" alt="Tanda Tangan" class="border rounded max-h-48" loading="lazy" decoding="async">
                             </div>
                             @endif
                             @if($journal->instructor_live_photo)
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Foto Live Instruktur</label>
-                                <img src="{{ asset('storage/' . $journal->instructor_live_photo) }}" alt="Foto Live" class="border rounded max-h-64 object-cover">
+                                <img src="{{ asset('storage/' . $journal->instructor_live_photo) }}" alt="Foto Live" class="border rounded max-h-64 object-cover" loading="lazy" decoding="async">
                             </div>
                             @endif
                         </div>

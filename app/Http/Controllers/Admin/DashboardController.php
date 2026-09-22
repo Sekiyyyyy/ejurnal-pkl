@@ -18,14 +18,14 @@ class DashboardController extends Controller
         $totalJournals = Journal::count();
         $totalTemplates = Template::count();
 
-        // 2. Data untuk Grafik (Menghitung jumlah siswa di setiap jurusan)
-        $majors = Major::all();
+        // 2. Data untuk Grafik (Menghitung jumlah siswa di setiap jurusan secara efisien)
+        $majors = Major::withCount('students')->get();
         $chartLabels = [];
         $chartData = [];
 
         foreach ($majors as $major) {
             $chartLabels[] = $major->code ?? $major->name; // Gunakan kode jurusan
-            $chartData[] = Student::where('major_id', $major->id)->count();
+            $chartData[] = $major->students_count;
         }
 
         // 3. Data Terbaru (5 Pendaftar Terakhir) -> BAGIAN BARU

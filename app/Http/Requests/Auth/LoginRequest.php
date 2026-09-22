@@ -28,7 +28,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -42,7 +42,25 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $loginInput = trim((string) $this->input('email'));
+        $credentials = [
+            'password' => $this->input('password'),
+        ];
+
+        // Jika input merupakan format email valid, gunakan langsung
+        if (filter_var($loginInput, FILTER_VALIDATE_EMAIL)) {
+            $credentials['email'] = $loginInput;
+        } else {
+            // Cek apakah input berupa NISN siswa
+            $student = \App\Models\Student::with('user')->where('nisn', $loginInput)->first();
+            if ($student && $student->user) {
+                $credentials['email'] = $student->user->email;
+            } else {
+                $credentials['email'] = $loginInput;
+            }
+        }
+
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([

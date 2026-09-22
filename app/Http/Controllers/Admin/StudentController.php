@@ -9,6 +9,7 @@ use App\Models\Major;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class StudentController extends Controller
 {
@@ -32,7 +33,7 @@ class StudentController extends Controller
                   ->where('jurnal_2_completed_at', '<', now()->subDays(90));
         }
 
-        $students = $query->get();
+        $students = $query->paginate(25)->withQueryString();
         return view('admin.students.index', compact('students'));
     }
 
@@ -155,6 +156,49 @@ class StudentController extends Controller
         return back()->withErrors(['error' => 'Siswa ini tidak memiliki akun login yang terhubung.']);
     }
 
+    public function impersonate($id)
+    {
+        $student = Student::with('user')->findOrFail($id);
+
+        if (!$student->user) {
+            return back()->withErrors(['error' => 'Siswa ini belum memiliki akun pengguna yang terhubung.']);
+        }
+
+        // Simpan sesi ID admin sebelum beralih
+        session([
+            'impersonated_by_admin' => Auth::id(),
+            'impersonated_student_id' => $student->id,
+        ]);
+
+        // Login sebagai siswa
+        Auth::login($student->user);
+
+        return redirect()->route('dashboard')->with('success', 'Anda sekarang masuk sebagai siswa: ' . $student->name);
+    }
+
+    public function leaveImpersonate()
+    {
+        $adminId = session('impersonated_by_admin');
+        $studentId = session('impersonated_student_id');
+
+        if (!$adminId) {
+            return redirect()->route('login');
+        }
+
+        // Kembalikan auth ke akun admin
+        Auth::loginUsingId($adminId);
+
+        // Hapus sesi impersonate
+        session()->forget(['impersonated_by_admin', 'impersonated_student_id']);
+
+        if ($studentId) {
+            return redirect()->route('admin.students.show', $studentId)->with('success', 'Kembali ke sesi Admin.');
+        }
+
+        return redirect()->route('admin.students.index')->with('success', 'Kembali ke sesi Admin.');
+    }
+
+
     public function resetJournal($student_id, $journal_id)
     {
         $journal = \App\Models\Journal::where('student_id', $student_id)->findOrFail($journal_id);
@@ -206,11 +250,150 @@ class StudentController extends Controller
             'instructor_live_photo' => null,
             'teacher_live_photo' => null,
             'monitoring_locked_at' => null,
+            'teacher_rejection_note' => null,
+            'instructor_rejection_note' => null,
+            'kaprodi_status' => 'PENDING',
+            'kaprodi_rejection_note' => null,
             'status' => 'DRAFT',
             'grade_pdf_path' => null,
         ]);
 
+        $student = $journal->student;
+        if ($student) {
+            if ($journal->phase == 1) {
+                $student->update(['jurnal_1_completed_at' => null]);
+            } else if ($journal->phase == 2) {
+                $student->update(['jurnal_2_completed_at' => null]);
+            }
+        }
+
         return back()->with('success', 'Seluruh progress Jurnal PKL Tahap '.$journal->phase.' berhasil di-reset ke kondisi awal (termasuk Data PKL dan foto/TTD di storage).');
+    }
+
+    public function resetMonitoring($student_id, $journal_id)
+    {
+        $journal = \App\Models\Journal::where('id', $journal_id)->where('student_id', $student_id)->firstOrFail();
+
+        // 1. Hapus penilaian observasi monitoring
+        \App\Models\JournalAssessment::where('journal_id', $journal->id)
+            ->whereHas('assessment', function($q) {
+                $q->where('category', 'monitoring');
+            })->delete();
+
+        // 2. Hapus foto live dan tanda tangan guru dari storage secara aman
+        if ($journal->teacher_live_photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($journal->teacher_live_photo)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($journal->teacher_live_photo);
+        }
+        if ($journal->teacher_signature && \Illuminate\Support\Facades\Storage::disk('public')->exists($journal->teacher_signature)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($journal->teacher_signature);
+        }
+
+        // 3. Reset kolom monitoring di jurnal
+        $journal->teacher_live_photo = null;
+        $journal->teacher_signature = null;
+        $journal->monitoring_locked_at = null;
+        $journal->teacher_rejection_note = null;
+
+        // 4. Turunkan status jika sebelumnya COMPLETED
+        if ($journal->status === 'COMPLETED') {
+            $journal->status = 'IN_PROGRESS';
+            $student = $journal->student;
+            if ($student) {
+                if ($journal->phase == 1) {
+                    $student->update(['jurnal_1_completed_at' => null]);
+                } else if ($journal->phase == 2) {
+                    $student->update(['jurnal_2_completed_at' => null]);
+                }
+            }
+        }
+        if ($journal->kaprodi_status === 'APPROVED') {
+            $journal->kaprodi_status = 'PENDING';
+        }
+        $journal->save();
+
+        return back()->with('success', 'Hasil Monitoring Guru untuk PKL Tahap '.$journal->phase.' berhasil di-reset. Guru pembimbing dapat mengisi ulang instrumen observasi.');
+    }
+
+    public function resetFinalAssessment($student_id, $journal_id)
+    {
+        $journal = \App\Models\Journal::where('id', $journal_id)->where('student_id', $student_id)->firstOrFail();
+
+        // 1. Hapus nilai akhir instruktur
+        \App\Models\JournalAssessment::where('journal_id', $journal->id)
+            ->whereHas('assessment', function($q) {
+                $q->where('category', '!=', 'monitoring');
+            })->delete();
+
+        // 2. Hapus foto live dan tanda tangan instruktur dari storage secara aman
+        if ($journal->instructor_live_photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($journal->instructor_live_photo)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($journal->instructor_live_photo);
+        }
+        if ($journal->instructor_signature && \Illuminate\Support\Facades\Storage::disk('public')->exists($journal->instructor_signature)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($journal->instructor_signature);
+        }
+
+        // 3. Reset kolom penilaian instruktur di jurnal
+        $journal->instructor_live_photo = null;
+        $journal->instructor_signature = null;
+        $journal->instructor_rejection_note = null;
+
+        // 4. Turunkan status jika sebelumnya COMPLETED
+        if ($journal->status === 'COMPLETED') {
+            $journal->status = 'IN_PROGRESS';
+            $student = $journal->student;
+            if ($student) {
+                if ($journal->phase == 1) {
+                    $student->update(['jurnal_1_completed_at' => null]);
+                } else if ($journal->phase == 2) {
+                    $student->update(['jurnal_2_completed_at' => null]);
+                }
+            }
+        }
+        if ($journal->kaprodi_status === 'APPROVED') {
+            $journal->kaprodi_status = 'PENDING';
+        }
+        $journal->save();
+
+        return back()->with('success', 'Nilai Akhir Instruktur untuk PKL Tahap '.$journal->phase.' berhasil di-reset. Instruktur dapat menginput ulang nilai dan otorisasi.');
+    }
+
+    public function resetWeeklyApprovals($student_id, $journal_id)
+    {
+        $journal = \App\Models\Journal::where('id', $journal_id)->where('student_id', $student_id)->firstOrFail();
+
+        $weeklyApprovals = \App\Models\WeeklyApproval::where('journal_id', $journal->id)->get();
+        foreach ($weeklyApprovals as $wa) {
+            if ($wa->instructor_live_photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($wa->instructor_live_photo)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($wa->instructor_live_photo);
+            }
+            if ($wa->instructor_paraf && \Illuminate\Support\Facades\Storage::disk('public')->exists($wa->instructor_paraf)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($wa->instructor_paraf);
+            }
+        }
+
+        // Un-approve all daily activities
+        $journal->dailyActivities()->where('is_approved', true)->update(['is_approved' => false]);
+
+        // Delete all weekly approvals for this journal
+        \App\Models\WeeklyApproval::where('journal_id', $journal->id)->delete();
+
+        if ($journal->status === 'COMPLETED') {
+            $journal->status = 'IN_PROGRESS';
+            $student = $journal->student;
+            if ($student) {
+                if ($journal->phase == 1) {
+                    $student->update(['jurnal_1_completed_at' => null]);
+                } else if ($journal->phase == 2) {
+                    $student->update(['jurnal_2_completed_at' => null]);
+                }
+            }
+        }
+        if ($journal->kaprodi_status === 'APPROVED') {
+            $journal->kaprodi_status = 'PENDING';
+        }
+        $journal->save();
+
+        return back()->with('success', 'Seluruh histori validasi ACC mingguan PKL Tahap '.$journal->phase.' berhasil di-reset.');
     }
 
     public function rejectWeeklyApproval(Request $request, $id)
@@ -218,15 +401,16 @@ class StudentController extends Controller
         $request->validate(['rejection_note' => 'required|string']);
         $wa = \App\Models\WeeklyApproval::findOrFail($id);
         
-        // Delete invalid evidence
-        if($wa->instructor_live_photo) {
+        // Delete invalid evidence safely
+        if ($wa->instructor_live_photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($wa->instructor_live_photo)) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($wa->instructor_live_photo);
-            $wa->instructor_live_photo = '';
         }
-        if($wa->instructor_paraf) {
+        $wa->instructor_live_photo = null;
+
+        if ($wa->instructor_paraf && \Illuminate\Support\Facades\Storage::disk('public')->exists($wa->instructor_paraf)) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($wa->instructor_paraf);
-            $wa->instructor_paraf = '';
         }
+        $wa->instructor_paraf = null;
 
         $wa->rejection_note = $request->rejection_note;
         $wa->is_rejected = true;
@@ -245,7 +429,33 @@ class StudentController extends Controller
             $activity->update(['is_approved' => false]);
         }
 
+        $journal = $wa->journal;
+        if ($journal) {
+            if ($journal->status === 'COMPLETED') {
+                $journal->status = 'IN_PROGRESS';
+                $student = $journal->student;
+                if ($student) {
+                    if ($journal->phase == 1) {
+                        $student->update(['jurnal_1_completed_at' => null]);
+                    } else if ($journal->phase == 2) {
+                        $student->update(['jurnal_2_completed_at' => null]);
+                    }
+                }
+            }
+            if ($journal->kaprodi_status === 'APPROVED') {
+                $journal->kaprodi_status = 'PENDING';
+            }
+            $journal->save();
+        }
+
         return back()->with('success', 'Bukti ACC Mingguan berhasil ditolak.');
+    }
+
+    public function destroyWeeklyApproval($id)
+    {
+        $validationService = app(\App\Services\ValidationService::class);
+        $message = $validationService->deleteValidation('weekly', $id);
+        return back()->with('success', $message);
     }
 
     public function rejectFinalAssessment(Request $request, $id)
@@ -253,18 +463,30 @@ class StudentController extends Controller
         $request->validate(['rejection_note' => 'required|string']);
         $journal = \App\Models\Journal::findOrFail($id);
 
-        if($journal->instructor_live_photo) {
+        if ($journal->instructor_live_photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($journal->instructor_live_photo)) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($journal->instructor_live_photo);
-            $journal->instructor_live_photo = null;
         }
-        if($journal->instructor_signature) {
+        $journal->instructor_live_photo = null;
+
+        if ($journal->instructor_signature && \Illuminate\Support\Facades\Storage::disk('public')->exists($journal->instructor_signature)) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($journal->instructor_signature);
-            $journal->instructor_signature = null;
         }
+        $journal->instructor_signature = null;
 
         $journal->instructor_rejection_note = $request->rejection_note;
-        if($journal->status === 'COMPLETED') {
+        if ($journal->status === 'COMPLETED') {
             $journal->status = 'IN_PROGRESS'; // Unlock it
+            $student = $journal->student;
+            if ($student) {
+                if ($journal->phase == 1) {
+                    $student->update(['jurnal_1_completed_at' => null]);
+                } else if ($journal->phase == 2) {
+                    $student->update(['jurnal_2_completed_at' => null]);
+                }
+            }
+        }
+        if ($journal->kaprodi_status === 'APPROVED') {
+            $journal->kaprodi_status = 'PENDING';
         }
         $journal->save();
 
@@ -276,17 +498,33 @@ class StudentController extends Controller
         $request->validate(['rejection_note' => 'required|string']);
         $journal = \App\Models\Journal::findOrFail($id);
 
-        if($journal->teacher_live_photo) {
+        if ($journal->teacher_live_photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($journal->teacher_live_photo)) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($journal->teacher_live_photo);
-            $journal->teacher_live_photo = null;
         }
-        if($journal->teacher_signature) {
+        $journal->teacher_live_photo = null;
+
+        if ($journal->teacher_signature && \Illuminate\Support\Facades\Storage::disk('public')->exists($journal->teacher_signature)) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($journal->teacher_signature);
-            $journal->teacher_signature = null;
         }
+        $journal->teacher_signature = null;
 
         $journal->teacher_rejection_note = $request->rejection_note;
         $journal->monitoring_locked_at = null; // Unlock it
+
+        if ($journal->status === 'COMPLETED') {
+            $journal->status = 'IN_PROGRESS';
+            $student = $journal->student;
+            if ($student) {
+                if ($journal->phase == 1) {
+                    $student->update(['jurnal_1_completed_at' => null]);
+                } else if ($journal->phase == 2) {
+                    $student->update(['jurnal_2_completed_at' => null]);
+                }
+            }
+        }
+        if ($journal->kaprodi_status === 'APPROVED') {
+            $journal->kaprodi_status = 'PENDING';
+        }
         $journal->save();
 
         return back()->with('success', 'Bukti Monitoring Guru berhasil ditolak.');

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\JournalController;
+use App\Http\Controllers\DashboardDispatcherController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -11,20 +12,9 @@ Route::redirect('/', '/login'); // Langsung arahkan ke halaman login
 // =======================================================
 // 1. ROUTE PINTU MASUK UTAMA (DISPATCHER)
 // =======================================================
-Route::get('/dashboard', function () {
-    // Jika yang login adalah Super Admin, lempar ke ruangan khusus Admin
-    if (Auth::user()->role === 'super_admin') {
-        return redirect()->route('admin.dashboard');
-    }
-    
-    // Jika Kaprodi
-    if (Auth::user()->role === 'kaprodi') {
-        return redirect()->route('kaprodi.dashboard');
-    }
-    
-    // Jika yang login adalah Siswa, instansiasi controller dan jalankan method dashboard
-    return app()->make(JournalController::class)->dashboard();
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardDispatcherController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 
 // =======================================================
@@ -57,11 +47,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/siswa', [App\Http\Controllers\Admin\StudentController::class, 'store'])->name('students.store');
     Route::get('/siswa/{id}', [App\Http\Controllers\Admin\StudentController::class, 'show'])->name('students.show');
     Route::delete('/siswa/{id}', [App\Http\Controllers\Admin\StudentController::class, 'destroy'])->name('students.destroy');
+    Route::post('/siswa/{id}/impersonate', [App\Http\Controllers\Admin\StudentController::class, 'impersonate'])->name('students.impersonate');
     Route::put('/siswa/{id}/reset-password', [App\Http\Controllers\Admin\StudentController::class, 'resetPassword'])->name('students.reset-password');
     Route::put('/siswa/{student_id}/reset-journal/{journal_id}', [App\Http\Controllers\Admin\StudentController::class, 'resetJournal'])->name('students.reset-journal');
+    Route::put('/siswa/{student_id}/reset-monitoring/{journal_id}', [App\Http\Controllers\Admin\StudentController::class, 'resetMonitoring'])->name('students.reset-monitoring');
+    Route::put('/siswa/{student_id}/reset-final-assessment/{journal_id}', [App\Http\Controllers\Admin\StudentController::class, 'resetFinalAssessment'])->name('students.reset-final-assessment');
+    Route::put('/siswa/{student_id}/reset-weekly-approvals/{journal_id}', [App\Http\Controllers\Admin\StudentController::class, 'resetWeeklyApprovals'])->name('students.reset-weekly-approvals');
     
-    // Rejection Routes
+    // Rejection & Deletion Routes
     Route::post('/siswa/reject-weekly-approval/{id}', [App\Http\Controllers\Admin\StudentController::class, 'rejectWeeklyApproval'])->name('students.reject-weekly-approval');
+    Route::delete('/siswa/weekly-approval/{id}', [App\Http\Controllers\Admin\StudentController::class, 'destroyWeeklyApproval'])->name('students.destroy-weekly-approval');
     Route::post('/siswa/reject-final-assessment/{id}', [App\Http\Controllers\Admin\StudentController::class, 'rejectFinalAssessment'])->name('students.reject-final-assessment');
     Route::post('/siswa/reject-monitoring/{id}', [App\Http\Controllers\Admin\StudentController::class, 'rejectMonitoring'])->name('students.reject-monitoring');
     // Manajemen Template Word
@@ -80,6 +75,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/penilaian/{id}', [App\Http\Controllers\Admin\AssessmentController::class, 'update'])->name('assessments.update');
 
     Route::delete('/penilaian/{id}', [App\Http\Controllers\Admin\AssessmentController::class, 'destroy'])->name('assessments.destroy');
+
+    // Validasi Bukti Siswa (Live Camera & TTD)
+    Route::get('/validasi-bukti', [App\Http\Controllers\Admin\ValidationController::class, 'index'])->name('validations.index');
+    Route::delete('/validasi-bukti/{type}/{id}', [App\Http\Controllers\Admin\ValidationController::class, 'destroy'])->name('validations.destroy');
 });
 
 
@@ -88,6 +87,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 // =======================================================
 Route::middleware(['auth', 'verified', 'role:kaprodi'])->prefix('kaprodi')->name('kaprodi.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Kaprodi\JournalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/validasi-bukti', [App\Http\Controllers\Kaprodi\ValidationController::class, 'index'])->name('validations.index');
+    Route::delete('/validasi-bukti/{type}/{id}', [App\Http\Controllers\Kaprodi\ValidationController::class, 'destroy'])->name('validations.destroy');
     Route::get('/profil', [App\Http\Controllers\Kaprodi\ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/profil', [App\Http\Controllers\Kaprodi\ProfileController::class, 'update'])->name('profile.update');
     
@@ -97,8 +98,14 @@ Route::middleware(['auth', 'verified', 'role:kaprodi'])->prefix('kaprodi')->name
     
     // Spesifik Reject
     Route::post('/jurnal/reject-weekly/{wa_id}', [App\Http\Controllers\Kaprodi\JournalController::class, 'rejectWeeklyApproval'])->name('journal.reject-weekly');
+    Route::delete('/jurnal/weekly-approval/{wa_id}', [App\Http\Controllers\Kaprodi\JournalController::class, 'destroyWeeklyApproval'])->name('journal.destroy-weekly');
     Route::post('/jurnal/{id}/reject-final', [App\Http\Controllers\Kaprodi\JournalController::class, 'rejectFinalAssessment'])->name('journal.reject-final');
     Route::post('/jurnal/{id}/reject-monitoring', [App\Http\Controllers\Kaprodi\JournalController::class, 'rejectMonitoring'])->name('journal.reject-monitoring');
+
+    // Spesifik Reset
+    Route::put('/jurnal/{id}/reset-monitoring', [App\Http\Controllers\Kaprodi\JournalController::class, 'resetMonitoring'])->name('journal.reset-monitoring');
+    Route::put('/jurnal/{id}/reset-final-assessment', [App\Http\Controllers\Kaprodi\JournalController::class, 'resetFinalAssessment'])->name('journal.reset-final-assessment');
+    Route::put('/jurnal/{id}/reset-weekly-approvals', [App\Http\Controllers\Kaprodi\JournalController::class, 'resetWeeklyApprovals'])->name('journal.reset-weekly-approvals');
 });
 
 
@@ -160,6 +167,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/impersonate/leave', [App\Http\Controllers\Admin\StudentController::class, 'leaveImpersonate'])->name('impersonate.leave');
 });
 
 require __DIR__.'/auth.php';

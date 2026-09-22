@@ -18,7 +18,7 @@ class PplgAssessmentSeeder extends Seeder
 
         // Mencegah duplikasi jika Seeder dijalankan 2 kali
         if (Assessment::where('major_id', $pplg->id)->exists()) {
-            $this->command->info('Data penilaian PPLG sudah ada, proses dihentikan agar tidak dobel.');
+            $this->command?->info('Data penilaian PPLG sudah ada, proses dihentikan agar tidak dobel.');
             return;
         }
 
@@ -55,6 +55,6 @@ class PplgAssessmentSeeder extends Seeder
             $newSub->save();
         }
 
-        $this->command->info('Sukses! Jurusan PPLG berhasil ditambahkan beserta 43 duplikat kriteria penilaiannya.');
+        $this->command?->info('Sukses! Jurusan PPLG berhasil ditambahkan beserta 43 duplikat kriteria penilaiannya.');
     }
 }

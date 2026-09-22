@@ -17,6 +17,9 @@ class JournalController extends Controller
     public function dashboard()
     {
         $student = Auth::user()->student;
+        if (!$student) {
+            return redirect()->route('student.profile.edit')->with('error', 'Silakan lengkapi profil biodata siswa terlebih dahulu.');
+        }
         $journals = Journal::where('student_id', $student->id)->orderBy('phase', 'asc')->get();
         return view('dashboard', compact('journals'));
     }
@@ -24,10 +27,13 @@ class JournalController extends Controller
     public function show($id)
     {
         $student = Auth::user()->student;
+        if (!$student) {
+            abort(403, 'Akses ditolak. Profil siswa tidak ditemukan.');
+        }
 
         $journal = Journal::where('id', $id)
                             ->where('student_id', $student->id)
-                            ->with(['dailyActivities', 'assessments.assessment'])
+                            ->with(['dailyActivities', 'assessments.assessment', 'weeklyApprovals'])
                             ->firstOrFail();
 
         if ($journal->phase == 2) {
@@ -61,12 +67,11 @@ class JournalController extends Controller
                 $currentDate->addDay();
             }
             
-            $activities = $journal->dailyActivities()
-                                ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-                                ->get();
-                                
-            $recordedDays = $activities->count();
-            $approvedDays = $activities->where('is_approved', true)->count();
+            $dailyQuery = $journal->dailyActivities()
+                                    ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
+                                    
+            $recordedDays = (clone $dailyQuery)->count();
+            $approvedDays = (clone $dailyQuery)->where('is_approved', true)->count();
             
             $isDailyFilled = ($recordedDays >= $totalDays && $totalDays > 0);
             $isDailyApproved = ($approvedDays >= $totalDays && $totalDays > 0);
@@ -149,12 +154,11 @@ class JournalController extends Controller
                 $currentDate->addDay();
             }
             
-            $activities = $journal->dailyActivities()
-                                  ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-                                  ->get();
+            $dailyQuery = $journal->dailyActivities()
+                                  ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
                                   
-            $recordedDays = $activities->count();
-            $approvedDays = $activities->where('is_approved', true)->count();
+            $recordedDays = (clone $dailyQuery)->count();
+            $approvedDays = (clone $dailyQuery)->where('is_approved', true)->count();
             
             $isDailyFilled = ($recordedDays >= $totalDays && $totalDays > 0);
             $isDailyApproved = ($approvedDays >= $totalDays && $totalDays > 0);

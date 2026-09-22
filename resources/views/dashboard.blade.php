@@ -45,29 +45,49 @@
                     $isLocked = ($journal->phase == 2 && !$fase1Completed);
                 @endphp
 
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 relative {{ $isLocked ? 'opacity-80' : '' }}">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-2xl border border-slate-200/80 p-6 relative transition-all duration-300 hover:shadow-md hover:border-indigo-200 {{ $isLocked ? 'opacity-75 bg-slate-50' : '' }}">
                     @if($isLocked)
-                        <div class="absolute top-4 right-4 text-red-500"><i class="fa-solid fa-lock text-xl"></i></div>
+                        <div class="absolute top-5 right-5 h-9 w-9 rounded-full bg-rose-50 text-rose-500 border border-rose-200 flex items-center justify-center shadow-sm">
+                            <i class="fa-solid fa-lock text-sm"></i>
+                        </div>
+                    @else
+                        <div class="absolute top-5 right-5 h-9 w-9 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center shadow-sm">
+                            <i class="fa-solid fa-book-open text-sm"></i>
+                        </div>
                     @endif
 
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Jurnal PKL Fase {{ $journal->phase }}</h3>
-                    <p class="text-sm text-gray-600 mb-4">Status: 
-                        <span class="px-2 py-1 rounded text-xs font-semibold {{ $journal->status == 'DRAFT' ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800' }}">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ $journal->phase == 1 ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-purple-50 text-purple-700 border border-purple-200' }}">
+                            Fase {{ $journal->phase }}
+                        </span>
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ in_array($journal->status, ['COMPLETED', 'GENERATED', 'READY_TO_GENERATE']) ? 'bg-emerald-100 text-emerald-800' : ($journal->status == 'DRAFT' ? 'bg-slate-100 text-slate-700' : 'bg-blue-100 text-blue-800') }}">
                             {{ $journal->status }}
                         </span>
-                    </p>
+                    </div>
+
+                    <h3 class="text-xl font-black text-slate-800 mb-4 tracking-tight">Jurnal Praktik Kerja Lapangan</h3>
                     
-                    <div class="border-t border-gray-200 pt-4">
-                        <p class="text-sm text-gray-700 mb-1"><strong>Tempat PKL:</strong> {{ $journal->company_name ?? 'Belum dipilih' }}</p>
-                        <p class="text-sm text-gray-700 mb-4"><strong>Pembimbing:</strong> {{ $journal->teacher_name ?? 'Belum dipilih' }}</p>
-                        
+                    <div class="border-t border-slate-100 pt-4 space-y-2 mb-6 text-sm">
+                        <div class="flex items-center gap-2.5 text-slate-600">
+                            <i class="fa-solid fa-building text-slate-400 w-4 text-center"></i>
+                            <span><strong>Tempat PKL:</strong> {{ $journal->company_name ?? 'Belum dipilih' }}</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 text-slate-600">
+                            <i class="fa-solid fa-chalkboard-user text-slate-400 w-4 text-center"></i>
+                            <span><strong>Pembimbing:</strong> {{ $journal->teacher_name ?? 'Belum dipilih' }}</span>
+                        </div>
+                    </div>
+
+                    <div>
                         @if($isLocked)
-                            <button disabled class="inline-block bg-gray-300 text-gray-500 font-bold py-2 px-4 rounded cursor-not-allowed">
-                                Terkunci (Selesaikan Fase 1)
+                            <button disabled class="w-full flex items-center justify-center gap-2 bg-slate-200 text-slate-500 font-bold py-2.5 px-4 rounded-xl cursor-not-allowed text-sm">
+                                <i class="fa-solid fa-lock text-xs"></i>
+                                Terkunci (Selesaikan Fase 1 Dahulu)
                             </button>
                         @else
-                            <a href="{{ route('journal.show', $journal->id) }}" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition">
-                                Buka Jurnal
+                            <a href="{{ route('journal.show', $journal->id) }}" class="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-sm transition duration-200 text-sm hover:shadow-indigo-500/25">
+                                <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                                Buka Jurnal PKL
                             </a>
                         @endif
                     </div>

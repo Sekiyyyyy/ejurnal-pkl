@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Journal;
 use App\Models\Assessment;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpWord\TemplateProcessor;
 
 class ExportController extends Controller
@@ -37,8 +38,8 @@ class ExportController extends Controller
             return back()->withErrors(['error' => 'Sistem gagal mencetak: Tidak ada Template Word yang aktif. Harap upload dan aktifkan di panel Admin.']);
         }
 
-        // Tentukan path ke template yang diupload (di dalam folder public)
-        $templatePath = storage_path('app/public/' . $activeTemplate->file_path);
+        // Tentukan path ke template yang diupload (di dalam folder disk public/NFS)
+        $templatePath = Storage::disk('public')->path($activeTemplate->file_path);
         
         if (!file_exists($templatePath)) {
             return back()->withErrors(['error' => 'File template fisik tidak ditemukan di server.']);
@@ -108,7 +109,7 @@ class ExportController extends Controller
                 $setVal("keg_karakter#{$row}", $act->character_values ?? '-');
                 $setVal("keg_catatan#{$row}", $act->instructor_notes ?? '-');
                 
-                $parafPath = $journal->instructor_paraf ? storage_path('app/public/' . $journal->instructor_paraf) : null;
+                $parafPath = $journal->instructor_paraf ? Storage::disk('public')->path($journal->instructor_paraf) : null;
                 if ($act->is_approved && $parafPath && file_exists($parafPath)) {
                     $templateProcessor->setImageValue("paraf_instruktur#{$row}", [
                         'path' => $parafPath, 'width' => 40, 'height' => 25, 'ratio' => false
@@ -218,7 +219,7 @@ class ExportController extends Controller
         ];
 
         foreach ($signatures as $placeholder => $path) {
-            $fullPath = $path ? storage_path('app/public/' . $path) : null;
+            $fullPath = $path ? Storage::disk('public')->path($path) : null;
             if ($fullPath && file_exists($fullPath)) {
                 try {
                     $templateProcessor->setImageValue($placeholder, [
@@ -237,7 +238,7 @@ class ExportController extends Controller
         }
 
         $fileName = 'Jurnal_PKL_' . str_replace(' ', '_', $journal->student->name) . '_Fase_' . $journal->phase . '.docx';
-        $tempPath = storage_path('app/public/' . $fileName);
+        $tempPath = Storage::disk('public')->path($fileName);
         $templateProcessor->saveAs($tempPath);
 
         return response()->download($tempPath)->deleteFileAfterSend(true);

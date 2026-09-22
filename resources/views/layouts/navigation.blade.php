@@ -22,6 +22,13 @@
 
 
 
+                    <!-- KHUSUS KAPRODI -->
+                    @if(Auth::user()->role === 'kaprodi')
+                        <x-nav-link :href="route('kaprodi.validations.index')" :active="request()->routeIs('kaprodi.validations.*')">
+                            {{ __('Validasi Bukti') }}
+                        </x-nav-link>
+                    @endif
+
                     <!-- KHUSUS SISWA -->
                     @if(Auth::user()->role === 'student')
                         <x-nav-link :href="route('student.profile.edit')" :active="request()->routeIs('student.profile.*')">
@@ -97,6 +104,13 @@
             </x-responsive-nav-link>
 
 
+
+            <!-- KHUSUS KAPRODI -->
+            @if(Auth::user()->role === 'kaprodi')
+                <x-responsive-nav-link :href="route('kaprodi.validations.index')" :active="request()->routeIs('kaprodi.validations.*')">
+                    {{ __('Validasi Bukti') }}
+                </x-responsive-nav-link>
+            @endif
 
             <!-- KHUSUS SISWA -->
             @if(Auth::user()->role === 'student')

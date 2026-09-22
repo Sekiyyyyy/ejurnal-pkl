@@ -46,7 +46,7 @@
                             <p class="text-sm font-bold text-gray-500 uppercase mb-2">Tanda Tangan</p>
                             <div class="h-32 bg-white border border-gray-200 rounded-lg flex items-center justify-center p-2">
                                 @if($journal->teacher_signature)
-                                    <img src="{{ asset('storage/' . $journal->teacher_signature) }}" class="max-h-full max-w-full object-contain" alt="TTD Guru">
+                                    <img src="{{ asset('storage/' . $journal->teacher_signature) }}" class="max-h-full max-w-full object-contain" alt="TTD Guru" loading="lazy" decoding="async">
                                 @else
                                     <span class="text-gray-400 text-xs italic">Tidak ada tanda tangan</span>
                                 @endif
@@ -57,7 +57,7 @@
                             <p class="text-sm font-bold text-gray-500 uppercase mb-2">Foto Live Wajah</p>
                             <div class="h-32 bg-white border border-gray-200 rounded-lg flex items-center justify-center p-2 overflow-hidden">
                                 @if($journal->teacher_live_photo)
-                                    <img src="{{ asset('storage/' . $journal->teacher_live_photo) }}" class="max-h-full w-auto object-cover rounded" alt="Live Photo Guru">
+                                    <img src="{{ asset('storage/' . $journal->teacher_live_photo) }}" class="max-h-full w-auto object-cover rounded" alt="Live Photo Guru" loading="lazy" decoding="async">
                                 @else
                                     <span class="text-gray-400 text-xs italic">Tidak ada foto</span>
                                 @endif

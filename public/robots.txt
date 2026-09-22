@@ -1,2 +1,12 @@
+# E-Jurnal SMKN 1 Beringin - robots.txt
 User-agent: *
-Disallow:
+Allow: /
+Allow: /login
+Allow: /register
+Disallow: /admin/
+Disallow: /kaprodi/
+Disallow: /jurnal/
+Disallow: /biodata
+Disallow: /profile
+
+Sitemap: https://jurnal.tiksmkn1beringin.my.id/sitemap.xml

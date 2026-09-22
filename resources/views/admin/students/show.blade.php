@@ -4,10 +4,21 @@
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
                 Detail Akun Siswa: <span class="text-indigo-600">{{ $student->name }}</span>
             </h2>
-            <a href="{{ route('admin.students.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                Kembali
-            </a>
+            <div class="flex items-center gap-2">
+                @if($student->user)
+                    <form action="{{ route('admin.students.impersonate', $student->id, false) }}" method="POST" onsubmit="return confirm('Masuk ke aplikasi sebagai siswa {{ $student->name }}?');">
+                        @csrf
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1.5 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
+                            Login Sebagai Siswa
+                        </button>
+                    </form>
+                @endif
+                <a href="{{ route('admin.students.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                    Kembali
+                </a>
+            </div>
         </div>
     </x-slot>
 
@@ -18,6 +29,7 @@
         modalImgLive: '', 
         modalDate: '',
         modalRejectUrl: '',
+        modalDeleteUrl: '',
         rejectModalOpen: false
     }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -65,23 +77,157 @@
                 <div x-show="activeTab === 'biodata'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="p-6 sm:p-8" style="display: none;">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
-                            <h3 class="text-lg font-bold text-gray-900 border-b pb-2 mb-4">Informasi Akun</h3>
-                            <dl class="space-y-4">
+                            <div class="flex items-center justify-between border-b pb-2 mb-4">
+                                <h3 class="text-lg font-bold text-gray-900">Informasi Akun</h3>
+                                @if($student->user)
+                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                        Akun Aktif
+                                    </span>
+                                @else
+                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-600">
+                                        Belum Ada Akun
+                                    </span>
+                                @endif
+                            </div>
+
+                            <dl class="space-y-3.5">
                                 <div class="bg-gray-50 p-4 rounded-lg">
-                                    <dt class="text-sm font-medium text-gray-500">Nama Lengkap</dt>
+                                    <dt class="text-xs font-bold uppercase tracking-wider text-gray-500">Nama Lengkap</dt>
                                     <dd class="mt-1 text-base font-bold text-gray-900">{{ $student->name }}</dd>
                                 </div>
-                                <div class="bg-gray-50 p-4 rounded-lg">
-                                    <dt class="text-sm font-medium text-gray-500">NISN</dt>
-                                    <dd class="mt-1 text-base font-bold text-gray-900">{{ $student->nisn }}</dd>
+                                
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    <div class="bg-gray-50 p-4 rounded-lg">
+                                        <dt class="text-xs font-bold uppercase tracking-wider text-gray-500">NISN</dt>
+                                        <dd class="mt-1 text-base font-bold text-gray-900">{{ $student->nisn }}</dd>
+                                    </div>
+                                    <div class="bg-gray-50 p-4 rounded-lg">
+                                        <dt class="text-xs font-bold uppercase tracking-wider text-gray-500">Kelas</dt>
+                                        <dd class="mt-1 text-base font-bold text-gray-900">{{ $student->class ?? '-' }}</dd>
+                                    </div>
                                 </div>
-                                <div class="bg-gray-50 p-4 rounded-lg">
-                                    <dt class="text-sm font-medium text-gray-500">Email Akun</dt>
-                                    <dd class="mt-1 text-base font-bold text-gray-900">{{ $student->user->email ?? '-' }}</dd>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    <div class="bg-gray-50 p-4 rounded-lg">
+                                        <dt class="text-xs font-bold uppercase tracking-wider text-gray-500">Email Akun</dt>
+                                        <dd class="mt-1 text-sm font-semibold text-gray-900 break-all">{{ $student->user->email ?? '-' }}</dd>
+                                    </div>
+                                    <div class="bg-gray-50 p-4 rounded-lg">
+                                        <dt class="text-xs font-bold uppercase tracking-wider text-gray-500">Jurusan</dt>
+                                        <dd class="mt-1 text-sm font-bold text-indigo-700">{{ $student->major->name ?? 'Belum ada jurusan' }}</dd>
+                                    </div>
                                 </div>
+
+                                <!-- NO HP SISWA DENGAN TOMBOL WHATSAPP LANGSUNG -->
+                                @php
+                                    $rawStudentPhone = $student->phone ?? '';
+                                    $cleanStudentPhone = preg_replace('/[^0-9]/', '', $rawStudentPhone);
+                                    if (str_starts_with($cleanStudentPhone, '0')) {
+                                        $cleanStudentPhone = '62' . substr($cleanStudentPhone, 1);
+                                    }
+                                    $studentWaUrl = !empty($cleanStudentPhone) ? 'https://wa.me/' . $cleanStudentPhone . '?text=' . urlencode("Halo {$student->name}, kami dari Admin/Guru Pembimbing E-Jurnal PKL SMKN 1 Beringin...") : null;
+                                @endphp
+                                <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl shadow-xs">
+                                    <div class="flex items-center justify-between mb-1.5">
+                                        <dt class="text-xs font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-phone text-emerald-600"></i>
+                                            <span>No. Handphone / WhatsApp Siswa</span>
+                                        </dt>
+                                        @if($studentWaUrl)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-200 text-emerald-800">
+                                                Tersedia
+                                            </span>
+                                        @endif
+                                    </div>
+                                    
+                                    @if(!empty($student->phone))
+                                        <dd class="mt-1 flex flex-wrap items-center justify-between gap-2">
+                                            <div class="text-base font-extrabold text-emerald-950 tracking-wide font-mono">
+                                                {{ $student->phone }}
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <a href="{{ $studentWaUrl }}" 
+                                                   target="_blank" 
+                                                   rel="noopener noreferrer" 
+                                                   class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm transition hover:shadow">
+                                                    <i class="fa-brands fa-whatsapp text-sm"></i>
+                                                    <span>Chat WhatsApp Siswa</span>
+                                                </a>
+                                                <a href="tel:{{ $cleanStudentPhone }}" 
+                                                   class="inline-flex items-center justify-center p-1.5 bg-white border border-emerald-300 hover:bg-emerald-100 text-emerald-700 rounded-lg text-xs transition" 
+                                                   title="Panggil via Telepon">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                                </a>
+                                            </div>
+                                        </dd>
+                                    @else
+                                        <dd class="mt-1 text-sm text-gray-500 italic">
+                                            Nomor handphone belum diisi oleh siswa.
+                                        </dd>
+                                    @endif
+                                </div>
+
+                                <!-- NO HP ORANG TUA / WALI -->
+                                @php
+                                    $rawParentPhone = $student->parent_phone ?? '';
+                                    $cleanParentPhone = preg_replace('/[^0-9]/', '', $rawParentPhone);
+                                    if (str_starts_with($cleanParentPhone, '0')) {
+                                        $cleanParentPhone = '62' . substr($cleanParentPhone, 1);
+                                    }
+                                    $parentWaUrl = !empty($cleanParentPhone) ? 'https://wa.me/' . $cleanParentPhone . '?text=' . urlencode("Halo Bapak/Ibu wali dari {$student->name}, kami dari Admin/Guru SMKN 1 Beringin...") : null;
+                                @endphp
                                 <div class="bg-gray-50 p-4 rounded-lg">
-                                    <dt class="text-sm font-medium text-gray-500">Jurusan</dt>
-                                    <dd class="mt-1 text-base font-bold text-gray-900">{{ $student->major->name ?? 'Belum ada jurusan' }}</dd>
+                                    <div class="flex items-center justify-between mb-1">
+                                        <dt class="text-xs font-bold uppercase tracking-wider text-gray-500">Kontak Orang Tua / Wali ({{ $student->parent_name ?? '-' }})</dt>
+                                    </div>
+                                    @if(!empty($student->parent_phone))
+                                        <dd class="mt-1 flex flex-wrap items-center justify-between gap-2">
+                                            <span class="text-sm font-bold text-gray-900 font-mono">{{ $student->parent_phone }}</span>
+                                            <a href="{{ $parentWaUrl }}" 
+                                               target="_blank" 
+                                               rel="noopener noreferrer" 
+                                               class="inline-flex items-center gap-1 bg-gray-200 hover:bg-emerald-600 hover:text-white text-gray-700 text-xs font-semibold px-2.5 py-1 rounded transition">
+                                                <i class="fa-brands fa-whatsapp"></i>
+                                                <span>WA Orang Tua</span>
+                                            </a>
+                                        </dd>
+                                    @else
+                                        <dd class="mt-1 text-sm text-gray-400 italic">Belum dicantumkan</dd>
+                                    @endif
+                                </div>
+
+                                <!-- ALAMAT SISWA -->
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <dt class="text-xs font-bold uppercase tracking-wider text-gray-500">Alamat Tempat Tinggal</dt>
+                                    <dd class="mt-1 text-sm text-gray-800">{{ $student->address ?? '-' }}</dd>
+                                </div>
+
+                                <!-- KOTAK AKSI CEPAT ADMIN -->
+                                <div class="bg-indigo-50/60 border border-indigo-100 p-4 rounded-xl mt-4">
+                                    <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-900 mb-3 flex items-center gap-1.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                                        <span>Aksi Akun Siswa</span>
+                                    </h4>
+                                    <div class="flex flex-col sm:flex-row gap-2.5">
+                                        @if($student->user)
+                                            <form action="{{ route('admin.students.impersonate', $student->id, false) }}" method="POST" class="flex-1" onsubmit="return confirm('Masuk ke aplikasi sebagai siswa {{ $student->name }}?');">
+                                                @csrf
+                                                <button type="submit" class="w-full flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-3 rounded-lg shadow-sm transition text-xs">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
+                                                    Login Sebagai Siswa
+                                                </button>
+                                            </form>
+
+                                            <form action="{{ route('admin.students.reset-password', $student->id, false) }}" method="POST" class="flex-1" onsubmit="return confirm('Reset password akun ini menjadi: password123 ?');">
+                                                @csrf
+                                                @method('PUT')
+                                                <button type="submit" class="w-full flex items-center justify-center gap-1.5 bg-white hover:bg-amber-50 text-amber-900 border border-amber-300 font-bold py-2 px-3 rounded-lg shadow-sm transition text-xs">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+                                                    Reset Password
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
                                 </div>
                             </dl>
                         </div>
@@ -107,14 +253,36 @@
                                             <div class="text-sm text-gray-600 mb-4">
                                                 <span class="font-semibold">Instruktur:</span> {{ $journal->instructor_name ?? '-' }}
                                             </div>
-                                            <!-- Reset Button untuk Testing -->
-                                            <div class="border-t pt-3 flex justify-end">
-                                                <form action="{{ route('admin.students.reset-journal', ['student_id' => $student->id, 'journal_id' => $journal->id]) }}" method="POST" onsubmit="return confirm('YAKIN RESET PROGRESS? Semua data harian, nilai, tanda tangan, foto akan dihapus (kecuali data profil PKL & penempatan).');">
+                                            <!-- Action Buttons: Reset Bertahap & Total -->
+                                            <div class="border-t pt-3 flex flex-wrap items-center justify-end gap-2">
+                                                @if($journal->monitoring_locked_at || $journal->teacher_live_photo || $journal->teacher_signature || $journal->assessments->where('assessment.category', 'monitoring')->count() > 0)
+                                                    <form action="{{ route('admin.students.reset-monitoring', ['student_id' => $student->id, 'journal_id' => $journal->id], false) }}" method="POST" onsubmit="return confirm('Reset hasil monitoring guru untuk PKL Tahap {{ $journal->phase }}?\n\nJawaban observasi serta foto/TTD guru pembimbing akan dihapus.');">
+                                                        @csrf
+                                                        @method('PUT')
+                                                        <button type="submit" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold py-1 px-2.5 rounded border border-amber-200 flex items-center gap-1 transition shadow-sm">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                                            Reset Monitoring
+                                                        </button>
+                                                    </form>
+                                                @endif
+
+                                                @if($journal->status === 'COMPLETED' || $journal->instructor_live_photo || $journal->instructor_signature || $journal->assessments->where('assessment.category', '!=', 'monitoring')->count() > 0)
+                                                    <form action="{{ route('admin.students.reset-final-assessment', ['student_id' => $student->id, 'journal_id' => $journal->id], false) }}" method="POST" onsubmit="return confirm('Reset nilai akhir instruktur untuk PKL Tahap {{ $journal->phase }}?\n\nSeluruh nilai kriteria serta foto/TTD instruktur akan dihapus.');">
+                                                        @csrf
+                                                        @method('PUT')
+                                                        <button type="submit" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold py-1 px-2.5 rounded border border-rose-200 flex items-center gap-1 transition shadow-sm">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                                            Reset Nilai Akhir
+                                                        </button>
+                                                    </form>
+                                                @endif
+
+                                                <form action="{{ route('admin.students.reset-journal', ['student_id' => $student->id, 'journal_id' => $journal->id], false) }}" method="POST" onsubmit="return confirm('YAKIN RESET TOTAL? Semua data harian, nilai, tanda tangan, foto akan dihapus (kecuali data profil PKL & penempatan).');">
                                                     @csrf
                                                     @method('PUT')
-                                                    <button type="submit" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 font-bold py-1 px-3 rounded flex items-center gap-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                                        Reset Progress Jurnal
+                                                    <button type="submit" class="text-xs bg-gray-100 hover:bg-red-100 text-gray-700 hover:text-red-700 font-bold py-1 px-2.5 rounded border border-gray-200 hover:border-red-200 flex items-center gap-1 transition shadow-sm">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                        Reset Total
                                                     </button>
                                                 </form>
                                             </div>
@@ -179,10 +347,24 @@
                 <div x-show="activeTab === 'nilai'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="p-6 sm:p-8" style="display: none;">
                     @forelse($student->journals as $journal)
                         <div class="mb-12 last:mb-0">
-                            <h3 class="text-xl font-black text-gray-900 mb-6 pb-2 border-b-2 border-indigo-100 flex items-center gap-2">
-                                <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">{{ $journal->phase }}</span>
-                                Penilaian Akhir (PKL Tahap {{ $journal->phase }})
-                            </h3>
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-6 border-b-2 border-indigo-100 gap-3">
+                                <h3 class="text-xl font-black text-gray-900 flex items-center gap-2">
+                                    <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">{{ $journal->phase }}</span>
+                                    Penilaian Akhir (PKL Tahap {{ $journal->phase }})
+                                </h3>
+                                @if($journal->status === 'COMPLETED' || $journal->instructor_live_photo || $journal->instructor_signature || $journal->assessments->where('assessment.category', '!=', 'monitoring')->count() > 0)
+                                    <form action="{{ route('admin.students.reset-final-assessment', ['student_id' => $student->id, 'journal_id' => $journal->id], false) }}" 
+                                          method="POST" 
+                                          onsubmit="return confirm('Yakin ingin mereset seluruh nilai akhir dan otorisasi instruktur untuk PKL Tahap {{ $journal->phase }}?\n\nSemua nilai kriteria dan bukti foto/TTD instruktur akan dihapus agar dapat diisi ulang dari awal.');">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-lg border border-rose-200 transition shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                            Reset Nilai Akhir
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                             
                             <!-- Highlight Box: Final Validation Proof -->
                             <div class="mb-8 relative overflow-hidden bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-200 rounded-2xl shadow-sm p-6 sm:p-8">
@@ -198,9 +380,9 @@
                                             <p class="text-xs text-indigo-600 bg-indigo-100 inline-block px-2 py-1 rounded">Diambil saat penilaian akhir</p>
                                         </div>
                                         <div class="relative group w-48 h-48 rounded-xl overflow-hidden shadow-md border-4 border-white cursor-pointer"
-                                             @click="modalOpen = true; modalImgLive = '{{ $journal->instructor_live_photo ? asset('storage/' . $journal->instructor_live_photo) : '' }}'; modalImgSignature = '{{ $journal->instructor_signature ? asset('storage/' . $journal->instructor_signature) : '' }}'; modalDate = 'Penilaian Akhir PKL {{ $journal->phase }}'; modalRejectUrl = '{{ $journal->status == 'COMPLETED' ? route('admin.students.reject-final-assessment', $journal->id) : '' }}'">
+                                             @click="modalOpen = true; modalImgLive = '{{ $journal->instructor_live_photo ? asset('storage/' . $journal->instructor_live_photo) : '' }}'; modalImgSignature = '{{ $journal->instructor_signature ? asset('storage/' . $journal->instructor_signature) : '' }}'; modalDate = 'Penilaian Akhir PKL {{ $journal->phase }}'; modalRejectUrl = '{{ ($journal->status == 'COMPLETED' || $journal->instructor_live_photo || $journal->instructor_signature) ? route('admin.students.reject-final-assessment', $journal->id, false) : '' }}'">
                                             @if($journal->instructor_live_photo)
-                                                <img src="{{ asset('storage/' . $journal->instructor_live_photo) }}" class="w-full h-full object-cover transition duration-300 group-hover:scale-110" alt="Live Photo Instruktur">
+                                                <img src="{{ asset('storage/' . $journal->instructor_live_photo) }}" class="w-full h-full object-cover transition duration-300 group-hover:scale-110" alt="Live Photo Instruktur" loading="lazy" decoding="async">
                                                 <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition flex items-center justify-center">
                                                     <svg class="text-white opacity-0 group-hover:opacity-100 h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                                                 </div>
@@ -221,9 +403,9 @@
                                                 <div class="w-1/2">
                                                     <p class="text-xs font-bold text-gray-500 uppercase mb-2">Tanda Tangan</p>
                                                     <div class="h-24 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center p-2 cursor-pointer hover:bg-gray-100 transition"
-                                                         @click="modalOpen = true; modalImgLive = '{{ $journal->instructor_live_photo ? asset('storage/' . $journal->instructor_live_photo) : '' }}'; modalImgSignature = '{{ $journal->instructor_signature ? asset('storage/' . $journal->instructor_signature) : '' }}'; modalDate = 'Penilaian Akhir PKL {{ $journal->phase }}'; modalRejectUrl = '{{ $journal->status == 'COMPLETED' ? route('admin.students.reject-final-assessment', $journal->id) : '' }}'">
+                                                         @click="modalOpen = true; modalImgLive = '{{ $journal->instructor_live_photo ? asset('storage/' . $journal->instructor_live_photo) : '' }}'; modalImgSignature = '{{ $journal->instructor_signature ? asset('storage/' . $journal->instructor_signature) : '' }}'; modalDate = 'Penilaian Akhir PKL {{ $journal->phase }}'; modalRejectUrl = '{{ ($journal->status == 'COMPLETED' || $journal->instructor_live_photo || $journal->instructor_signature) ? route('admin.students.reject-final-assessment', $journal->id, false) : '' }}'">
                                                         @if($journal->instructor_signature)
-                                                            <img src="{{ asset('storage/' . $journal->instructor_signature) }}" class="max-h-full max-w-full object-contain" alt="TTD Instruktur">
+                                                            <img src="{{ asset('storage/' . $journal->instructor_signature) }}" class="max-h-full max-w-full object-contain" alt="TTD Instruktur" loading="lazy" decoding="async">
                                                         @else
                                                             <span class="text-gray-400 text-xs italic">Belum ada tanda tangan</span>
                                                         @endif
@@ -357,52 +539,93 @@
 
                     @forelse($student->journals as $journal)
                         <div class="mb-10 last:mb-0">
-                            <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b-2 border-indigo-100 inline-block">
-                                PKL Tahap {{ $journal->phase }} - Histori ACC Mingguan
-                            </h3>
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-3 border-b border-gray-200">
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-800">
+                                        PKL Tahap {{ $journal->phase }} - Histori ACC Mingguan
+                                    </h3>
+                                    <p class="text-xs text-gray-500 mt-0.5">Total {{ $journal->weeklyApprovals->count() }} validasi mingguan tercatat</p>
+                                </div>
+                                @if($journal->weeklyApprovals->isNotEmpty())
+                                    <form action="{{ route('admin.students.reset-weekly-approvals', ['student_id' => $student->id, 'journal_id' => $journal->id]) }}" 
+                                          method="POST" 
+                                          onsubmit="return confirm('PERINGATAN: Apakah Anda yakin ingin mereset seluruh histori validasi mingguan pada PKL Tahap {{ $journal->phase }}? Semua file foto live instruktur dan paraf akan dihapus permanen, status kegiatan mingguan akan dikembalikan, dan siswa harus divalidasi ulang.')">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-lg border border-rose-200 transition shadow-sm hover:shadow">
+                                            <svg class="w-4 h-4 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                            Reset Histori Validasi Tahap {{ $journal->phase }}
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                             
                             @if($journal->weeklyApprovals->isEmpty())
                                 <div class="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center text-gray-500 italic">
                                     Belum ada data validasi mingguan pada tahap ini.
                                 </div>
                             @else
-                                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pb-4">
                                     @foreach($journal->weeklyApprovals as $wa)
-                                        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition duration-300 group cursor-pointer"
-                                             @click="modalOpen = true; modalImgLive = '{{ $wa->instructor_live_photo ? asset('storage/' . $wa->instructor_live_photo) : '' }}'; modalImgSignature = '{{ $wa->instructor_paraf ? asset('storage/' . $wa->instructor_paraf) : '' }}'; modalDate = 'ACC Minggu Ke-{{ $wa->week_number }} | {{ $wa->approved_at ? $wa->approved_at->format('d M Y, H:i') : 'Unknown' }}'; modalRejectUrl = '{{ !$wa->is_rejected ? route('admin.students.reject-weekly-approval', $wa->id) : '' }}'">
+                                        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition duration-300 group cursor-pointer flex flex-col"
+                                             @click="modalOpen = true; 
+                                                     modalImgLive = '{{ $wa->instructor_live_photo ? asset('storage/' . $wa->instructor_live_photo) : '' }}'; 
+                                                     modalImgSignature = '{{ $wa->instructor_paraf ? asset('storage/' . $wa->instructor_paraf) : '' }}'; 
+                                                     modalDate = 'ACC Minggu Ke-{{ $wa->week_number }} | {{ $wa->approved_at ? $wa->approved_at->format('d M Y, H:i') : ($wa->is_rejected ? 'Ditolak' : 'Belum Disetujui') }}'; 
+                                                     modalRejectUrl = '{{ !$wa->is_rejected ? route('admin.students.reject-weekly-approval', $wa->id, false) : '' }}';
+                                                     modalDeleteUrl = '{{ route('admin.students.destroy-weekly-approval', $wa->id, false) }}';">
                                             
                                             <!-- Thumbnail -->
-                                            <div class="h-40 bg-gray-100 relative overflow-hidden">
+                                            <div class="h-44 bg-slate-100 relative overflow-hidden shrink-0">
                                                 @if($wa->instructor_live_photo)
-                                                    <img src="{{ asset('storage/' . $wa->instructor_live_photo) }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Live Photo Minggu {{ $wa->week_number }}">
+                                                    <img src="{{ asset('storage/' . $wa->instructor_live_photo) }}" 
+                                                         class="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
+                                                         alt="Live Photo Minggu {{ $wa->week_number }}" 
+                                                         loading="lazy" 
+                                                         decoding="async"
+                                                         onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
                                                     
+                                                    <!-- Broken Image Fallback -->
+                                                    <div class="hidden absolute inset-0 flex items-center justify-center h-full text-slate-400 flex-col bg-slate-100">
+                                                        <svg class="h-8 w-8 mb-1.5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                        <span class="text-xs font-medium text-slate-400">Foto Tidak Tersedia</span>
+                                                    </div>
+
                                                     <!-- Lightbox Icon overlay -->
-                                                    <div class="absolute inset-0 bg-indigo-900 bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center">
-                                                        <svg class="text-white opacity-0 group-hover:opacity-100 h-10 w-10 transform scale-50 group-hover:scale-100 transition duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                                    <div class="absolute inset-0 bg-indigo-900 bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center pointer-events-none">
+                                                        <svg class="text-white opacity-0 group-hover:opacity-100 h-10 w-10 transform scale-75 group-hover:scale-100 transition duration-300 drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                                     </div>
                                                 @else
-                                                    <div class="flex items-center justify-center h-full text-gray-400 flex-col">
-                                                        <svg class="h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                                        <span class="text-xs">No Photo</span>
+                                                    <div class="flex items-center justify-center h-full text-gray-400 flex-col bg-slate-100">
+                                                        <svg class="h-8 w-8 mb-1.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                        <span class="text-xs font-medium text-gray-400">Tidak Ada Foto</span>
                                                     </div>
                                                 @endif
                                                 
                                                 <!-- Status Badge -->
-                                                <div class="absolute top-2 right-2 flex flex-col gap-1 items-end">
+                                                <div class="absolute top-2 right-2 flex flex-col gap-1 items-end z-10">
                                                     @if($wa->is_rejected)
-                                                        <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow">DITOLAK</span>
+                                                        <span class="bg-red-500/95 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">DITOLAK</span>
                                                     @else
-                                                        <span class="bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow">VALIDATED</span>
+                                                        <span class="bg-emerald-500/95 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">VALIDATED</span>
                                                     @endif
                                                 </div>
                                             </div>
                                             
                                             <!-- Card Info -->
-                                            <div class="p-4 border-t border-gray-100">
-                                                <h4 class="font-bold text-gray-900 text-sm">ACC Minggu Ke-{{ $wa->week_number }}</h4>
-                                                <div class="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                    {{ $wa->approved_at ? $wa->approved_at->format('d M Y, H:i') : '-' }}
+                                            <div class="p-3.5 bg-white border-t border-gray-100 flex-1 flex flex-col justify-between">
+                                                <div>
+                                                    <h4 class="font-bold text-gray-900 text-sm">ACC Minggu Ke-{{ $wa->week_number }}</h4>
+                                                    <div class="text-xs text-gray-500 mt-1 flex items-center gap-1.5">
+                                                        <svg class="h-3.5 w-3.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                        <span class="truncate">{{ $wa->approved_at ? $wa->approved_at->format('d M Y, H:i') : ($wa->is_rejected ? 'Ditolak' : '-') }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-2.5 pt-2 border-t border-gray-50 flex items-center justify-between text-[11px] text-indigo-600 font-semibold">
+                                                    <span>Lihat Bukti</span>
+                                                    <svg class="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                                                 </div>
                                             </div>
                                         </div>
@@ -427,10 +650,24 @@
 
                     @forelse($student->journals as $journal)
                         <div class="mb-10 last:mb-0 border-b border-gray-200 pb-10">
-                            <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                                <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">{{ $journal->phase }}</span>
-                                PKL Tahap {{ $journal->phase }}
-                            </h3>
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-6 border-b-2 border-indigo-100 gap-3">
+                                <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                    <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">{{ $journal->phase }}</span>
+                                    PKL Tahap {{ $journal->phase }}
+                                </h3>
+                                @if($journal->monitoring_locked_at || $journal->teacher_live_photo || $journal->teacher_signature || $journal->assessments->where('assessment.category', 'monitoring')->count() > 0)
+                                    <form action="{{ route('admin.students.reset-monitoring', ['student_id' => $student->id, 'journal_id' => $journal->id], false) }}" 
+                                          method="POST" 
+                                          onsubmit="return confirm('Yakin ingin mereset seluruh hasil monitoring guru untuk PKL Tahap {{ $journal->phase }}?\n\nSemua jawaban 10 indikator observasi dan foto/TTD guru pembimbing akan dihapus agar dapat diisi ulang dari awal.');">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold rounded-lg border border-amber-200 transition shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                            Reset Hasil Monitoring
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                             
                             @if(!$journal->monitoring_locked_at)
                                 <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-8 text-center text-yellow-700">
@@ -501,9 +738,9 @@
                                                     Foto Live Guru
                                                 </p>
                                                 <div class="bg-white p-2 rounded-lg border border-indigo-200 shadow-sm relative group cursor-pointer"
-                                                     @click="modalOpen = true; modalImgLive = '{{ $journal->teacher_live_photo ? asset('storage/' . $journal->teacher_live_photo) : '' }}'; modalImgSignature = '{{ $journal->teacher_signature ? asset('storage/' . $journal->teacher_signature) : '' }}'; modalDate = 'Monitoring Guru Pembimbing (PKL Tahap {{ $journal->phase }})'; modalRejectUrl = '{{ $journal->monitoring_locked_at ? route('admin.students.reject-monitoring', $journal->id) : '' }}'">
+                                                     @click="modalOpen = true; modalImgLive = '{{ $journal->teacher_live_photo ? asset('storage/' . $journal->teacher_live_photo) : '' }}'; modalImgSignature = '{{ $journal->teacher_signature ? asset('storage/' . $journal->teacher_signature) : '' }}'; modalDate = 'Monitoring Guru Pembimbing (PKL Tahap {{ $journal->phase }})'; modalRejectUrl = '{{ ($journal->monitoring_locked_at || $journal->teacher_live_photo || $journal->teacher_signature) ? route('admin.students.reject-monitoring', $journal->id, false) : '' }}'">
                                                     @if($journal->teacher_live_photo)
-                                                        <img src="{{ asset('storage/' . $journal->teacher_live_photo) }}" class="w-full h-48 object-cover rounded" alt="Live Photo Guru">
+                                                        <img src="{{ asset('storage/' . $journal->teacher_live_photo) }}" class="w-full h-48 object-cover rounded" alt="Live Photo Guru" loading="lazy" decoding="async">
                                                         <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition flex items-center justify-center rounded">
                                                             <svg class="text-white opacity-0 group-hover:opacity-100 h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                                                         </div>
@@ -522,9 +759,9 @@
                                                     Tanda Tangan
                                                 </p>
                                                 <div class="bg-white h-24 p-2 rounded-lg border border-indigo-200 shadow-sm flex items-center justify-center cursor-pointer hover:bg-gray-50 transition"
-                                                     @click="modalOpen = true; modalImgLive = '{{ $journal->teacher_live_photo ? asset('storage/' . $journal->teacher_live_photo) : '' }}'; modalImgSignature = '{{ $journal->teacher_signature ? asset('storage/' . $journal->teacher_signature) : '' }}'; modalDate = 'Monitoring Guru Pembimbing (PKL Tahap {{ $journal->phase }})'; modalRejectUrl = '{{ $journal->monitoring_locked_at ? route('admin.students.reject-monitoring', $journal->id) : '' }}'">
+                                                     @click="modalOpen = true; modalImgLive = '{{ $journal->teacher_live_photo ? asset('storage/' . $journal->teacher_live_photo) : '' }}'; modalImgSignature = '{{ $journal->teacher_signature ? asset('storage/' . $journal->teacher_signature) : '' }}'; modalDate = 'Monitoring Guru Pembimbing (PKL Tahap {{ $journal->phase }})'; modalRejectUrl = '{{ ($journal->monitoring_locked_at || $journal->teacher_live_photo || $journal->teacher_signature) ? route('admin.students.reject-monitoring', $journal->id, false) : '' }}'">
                                                     @if($journal->teacher_signature)
-                                                        <img src="{{ asset('storage/' . $journal->teacher_signature) }}" class="max-h-full max-w-full object-contain" alt="TTD Guru">
+                                                        <img src="{{ asset('storage/' . $journal->teacher_signature) }}" class="max-h-full max-w-full object-contain" alt="TTD Guru" loading="lazy" decoding="async">
                                                     @else
                                                         <span class="text-gray-400 text-xs italic">Tidak ada tanda tangan</span>
                                                     @endif
@@ -549,114 +786,176 @@
         </div>
 
         <!-- MODAL / LIGHTBOX -->
-        <div x-show="modalOpen" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="display: none;">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <!-- Background overlay -->
-                <div x-show="modalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black bg-opacity-80 transition-opacity" aria-hidden="true" @click="modalOpen = false"></div>
+        <div x-show="modalOpen" 
+             class="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto" 
+             aria-labelledby="modal-title" role="dialog" aria-modal="true" style="display: none;">
+            
+            <!-- Backdrop overlay (covers entire screen, sidebar, and header) -->
+            <div x-show="modalOpen" 
+                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
+                 x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" 
+                 class="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity" 
+                 aria-hidden="true" 
+                 @click="modalOpen = false"></div>
 
-                <!-- This element is to trick the browser into centering the modal contents. -->
-                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-                <!-- Modal panel -->
-                <div x-show="modalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-                    
-                    <div class="bg-indigo-600 px-4 py-3 sm:px-6 flex justify-between items-center">
-                        <h3 class="text-lg leading-6 font-bold text-white" id="modal-title" x-text="modalDate"></h3>
-                        <button @click="modalOpen = false" class="text-indigo-200 hover:text-white transition focus:outline-none">
-                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
-                    </div>
-                    
-                    <div class="bg-gray-50 px-4 py-6 sm:p-8">
-                        <div class="flex flex-col md:flex-row gap-8 items-center">
-                            
-                            <!-- Foto Live -->
-                            <div class="w-full md:w-1/2">
-                                <h4 class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3 text-center">Foto Live Instruktur</h4>
-                                <div class="bg-white p-2 rounded-xl border border-gray-200 shadow-sm">
-                                    <template x-if="modalImgLive">
-                                        <img :src="modalImgLive" class="w-full h-auto rounded-lg object-contain max-h-[400px]" alt="Full Live Photo">
-                                    </template>
-                                    <template x-if="!modalImgLive">
-                                        <div class="h-64 flex items-center justify-center bg-gray-100 rounded-lg text-gray-400">
-                                            <span class="text-sm italic">Foto tidak tersedia</span>
+            <!-- Modal panel -->
+            <div x-show="modalOpen" 
+                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" 
+                 x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" 
+                 class="relative bg-white rounded-2xl text-left shadow-2xl overflow-hidden w-full max-w-4xl my-auto z-10 flex flex-col max-h-[92vh]">
+                
+                <!-- Modal Header -->
+                <div class="bg-indigo-600 px-5 py-4 flex justify-between items-center shrink-0">
+                    <h3 class="text-base sm:text-lg font-bold text-white truncate pr-4" id="modal-title" x-text="modalDate"></h3>
+                    <button @click="modalOpen = false" class="text-indigo-200 hover:text-white transition p-1.5 rounded-lg hover:bg-indigo-700/50 focus:outline-none shrink-0">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                
+                <!-- Modal Body (Scrollable if height exceeds screen) -->
+                <div class="bg-slate-50 p-5 sm:p-7 overflow-y-auto space-y-6 flex-1">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                        
+                        <!-- Foto Live -->
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5 text-center flex items-center justify-center gap-1.5">
+                                <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                Foto Live Instruktur
+                            </h4>
+                            <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[220px]">
+                                <template x-if="modalImgLive">
+                                    <div class="w-full">
+                                        <img :src="modalImgLive" 
+                                             class="w-full h-auto rounded-lg object-contain max-h-[380px] mx-auto" 
+                                             alt="Full Live Photo"
+                                             onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                                        <div class="hidden h-56 flex items-center justify-center bg-slate-100 rounded-lg text-slate-400 flex-col">
+                                            <svg class="h-10 w-10 mb-2 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                            <span class="text-xs text-slate-500 italic">File foto tidak ditemukan di server</span>
                                         </div>
-                                    </template>
-                                </div>
+                                    </div>
+                                </template>
+                                <template x-if="!modalImgLive">
+                                    <div class="h-56 flex items-center justify-center bg-slate-100 rounded-lg text-slate-400 w-full flex-col">
+                                        <svg class="h-10 w-10 mb-2 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                        <span class="text-xs text-slate-500 italic">Foto tidak tersedia</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                        
+                        <!-- Tanda Tangan -->
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5 text-center flex items-center justify-center gap-1.5">
+                                <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                Tanda Tangan / Paraf
+                            </h4>
+                            <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[220px]">
+                                <template x-if="modalImgSignature">
+                                    <div class="w-full flex items-center justify-center p-4">
+                                        <img :src="modalImgSignature" 
+                                             class="max-w-full h-auto max-h-[180px] object-contain" 
+                                             alt="Signature"
+                                             onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                                        <div class="hidden flex items-center justify-center bg-slate-50 rounded-lg text-slate-400 h-full w-full py-8">
+                                            <span class="text-xs text-slate-500 italic">File tanda tangan tidak ditemukan</span>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template x-if="!modalImgSignature">
+                                    <div class="flex items-center justify-center bg-slate-50 rounded-lg text-slate-400 h-full w-full py-12 flex-col">
+                                        <svg class="h-8 w-8 mb-2 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                        <span class="text-xs text-slate-500 italic">Tanda tangan tidak tersedia</span>
+                                    </div>
+                                </template>
                             </div>
                             
-                            <!-- Tanda Tangan -->
-                            <div class="w-full md:w-1/2">
-                                <h4 class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3 text-center">Tanda Tangan / Paraf</h4>
-                                <div class="bg-white p-2 rounded-xl border border-gray-200 shadow-sm flex items-center justify-center min-h-[200px]">
-                                    <template x-if="modalImgSignature">
-                                        <img :src="modalImgSignature" class="max-w-full h-auto max-h-[200px] object-contain" alt="Signature">
-                                    </template>
-                                    <template x-if="!modalImgSignature">
-                                        <div class="flex items-center justify-center bg-gray-50 rounded-lg text-gray-400 h-full w-full">
-                                            <span class="text-sm italic">Tanda tangan tidak tersedia</span>
-                                        </div>
-                                    </template>
-                                </div>
-                                
-                                <!-- Meta Data Info Box -->
-                                <div class="mt-6 bg-blue-50 border border-blue-100 rounded-lg p-4">
-                                    <div class="flex items-start gap-3">
-                                        <svg class="h-5 w-5 text-blue-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        <div>
-                                            <h5 class="text-sm font-bold text-blue-800">Bukti Audit Kehadiran Sah</h5>
-                                            <p class="text-xs text-blue-600 mt-1">Sistem merekam bahwa instruktur berada di tempat dan membubuhkan persetujuannya secara langsung (real-time) melalui aplikasi.</p>
-                                        </div>
+                            <!-- Meta Data Info Box -->
+                            <div class="mt-4 bg-indigo-50 border border-indigo-100 rounded-xl p-3.5">
+                                <div class="flex items-start gap-3">
+                                    <svg class="h-5 w-5 text-indigo-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    <div>
+                                        <h5 class="text-xs font-bold text-indigo-900">Bukti Audit Kehadiran Sah</h5>
+                                        <p class="text-[11px] text-indigo-700 mt-0.5 leading-relaxed">Sistem merekam bahwa otorisasi dilakukan secara langsung (real-time) melalui aplikasi e-jurnal.</p>
                                     </div>
                                 </div>
                             </div>
-                            
                         </div>
+                        
                     </div>
+                </div>
+                
+                <!-- Modal Footer (Action Buttons) -->
+                <div class="bg-white border-t border-slate-200 px-5 py-3.5 sm:px-6 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                    <button type="button" @click="modalOpen = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition">
+                        Tutup
+                    </button>
                     
-                    <!-- Rejection Button -->
-                    <template x-if="modalRejectUrl">
-                        <div class="bg-gray-100 border-t border-gray-200 px-4 py-4 sm:px-8 flex justify-end">
-                            <button type="button" @click="rejectModalOpen = true; modalOpen = false" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 shadow-sm transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+                    <div class="flex items-center gap-2">
+                        <!-- Hapus Bukti Button -->
+                        <template x-if="modalDeleteUrl">
+                            <form :action="modalDeleteUrl" method="POST" onsubmit="return confirm('PERINGATAN: Apakah Anda yakin ingin MENGHAPUS bukti ini secara permanen? File foto/tanda tangan akan dihapus dari server dan data validasi dibersihkan.');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 hover:border-rose-300 font-bold py-2 px-4 rounded-lg flex items-center gap-1.5 text-xs shadow-sm transition">
+                                    <svg class="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    Hapus Bukti Ini
+                                </button>
+                            </form>
+                        </template>
+
+                        <!-- Tolak Bukti Button -->
+                        <template x-if="modalRejectUrl">
+                            <button type="button" @click="rejectModalOpen = true; modalOpen = false" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-1.5 text-xs shadow-sm transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
                                 Tolak Bukti Otorisasi Ini
                             </button>
-                        </div>
-                    </template>
+                        </template>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- REJECTION MODAL -->
-        <div x-show="rejectModalOpen" class="fixed inset-0 z-[60] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="display: none;">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div x-show="rejectModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black bg-opacity-80 transition-opacity" aria-hidden="true" @click="rejectModalOpen = false; modalOpen = true"></div>
-                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                
-                <div x-show="rejectModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <form :action="modalRejectUrl" method="POST">
-                        @csrf
-                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                            <div class="sm:flex sm:items-start">
-                                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                                    <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                                </div>
-                                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Tolak Bukti Otorisasi</h3>
-                                    <div class="mt-2">
-                                        <p class="text-sm text-gray-500 mb-4">Anda akan menolak bukti foto/tanda tangan ini. Bukti yang tidak valid akan dihapus dan siswa akan diminta untuk melakukan foto ulang bersama instruktur/guru.</p>
-                                        <label class="block text-sm font-bold text-gray-700 mb-2">Alasan Penolakan <span class="text-red-500">*</span></label>
-                                        <textarea name="rejection_note" rows="4" class="shadow-sm focus:ring-red-500 focus:border-red-500 block w-full sm:text-sm border-gray-300 border rounded-md p-3" placeholder="Contoh: Foto tidak jelas, hanya terlihat tembok. Harap foto bersama instruktur." required></textarea>
-                                    </div>
+        <div x-show="rejectModalOpen" 
+             class="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-4 overflow-y-auto" 
+             aria-labelledby="reject-modal-title" role="dialog" aria-modal="true" style="display: none;">
+            
+            <!-- Backdrop -->
+            <div x-show="rejectModalOpen" 
+                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
+                 x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" 
+                 class="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity" 
+                 aria-hidden="true" 
+                 @click="rejectModalOpen = false; modalOpen = true"></div>
+            
+            <!-- Panel -->
+            <div x-show="rejectModalOpen" 
+                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" 
+                 x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" 
+                 class="relative bg-white rounded-2xl text-left shadow-2xl overflow-hidden w-full max-w-lg my-auto z-10">
+                <form :action="modalRejectUrl" method="POST">
+                    @csrf
+                    <div class="bg-white px-5 pt-6 pb-5 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start gap-4">
+                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0">
+                                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:text-left flex-1">
+                                <h3 class="text-lg font-bold text-gray-900" id="reject-modal-title">Tolak Bukti Otorisasi</h3>
+                                <div class="mt-2">
+                                    <p class="text-xs text-gray-500 mb-4 leading-relaxed">Anda akan menolak bukti foto/tanda tangan ini. Bukti yang tidak valid akan dihapus dan siswa akan diminta untuk melakukan foto ulang bersama instruktur/guru.</p>
+                                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Alasan Penolakan <span class="text-red-500">*</span></label>
+                                    <textarea name="rejection_note" rows="3" class="shadow-sm focus:ring-red-500 focus:border-red-500 block w-full text-sm border-gray-300 border rounded-lg p-3" placeholder="Contoh: Foto tidak jelas, hanya terlihat tembok. Harap foto bersama instruktur." required></textarea>
                                 </div>
                             </div>
                         </div>
-                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">Konfirmasi Tolak</button>
-                            <button type="button" @click="rejectModalOpen = false; modalOpen = true" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Batal</button>
-                        </div>
-                    </form>
-                </div>
+                    </div>
+                    <div class="bg-gray-50 px-5 py-3.5 sm:px-6 flex flex-row-reverse gap-2">
+                        <button type="submit" class="inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-red-600 text-xs font-bold text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition">Konfirmasi Tolak</button>
+                        <button type="button" @click="rejectModalOpen = false; modalOpen = true" class="inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-xs font-bold text-gray-700 hover:bg-gray-50 focus:outline-none transition">Batal</button>
+                    </div>
+                </form>
             </div>
         </div>
 

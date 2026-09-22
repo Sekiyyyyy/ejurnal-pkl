@@ -19,8 +19,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Gunakan env variable untuk memaksa HTTPS agar bisa diatur per server
-        if (env('FORCE_HTTPS', false)) {
+        // Gunakan env variable atau konfigurasi APP_URL untuk memaksa HTTPS agar konsisten di balik reverse proxy
+        if (env('FORCE_HTTPS', true) || str_starts_with(config('app.url'), 'https://') || app()->environment('production')) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
     }

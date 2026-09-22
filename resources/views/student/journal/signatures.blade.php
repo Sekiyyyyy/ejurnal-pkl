@@ -29,7 +29,7 @@
                             <h4 class="font-bold text-gray-700 mb-2">Tanda Tangan Siswa</h4>
                             @if($journal->student_signature)
                             <div x-show="!showPad" class="mb-3">
-                                <img src="{{ asset('storage/' . $journal->student_signature) }}" alt="Ttd Siswa" class="h-20 object-contain bg-white border p-1 rounded mb-2">
+                                <img src="{{ asset('storage/' . $journal->student_signature) }}" alt="Ttd Siswa" class="h-20 object-contain bg-white border p-1 rounded mb-2" loading="lazy" decoding="async">
                                 <button type="button" @click="showPad = true" class="text-xs text-blue-600 hover:underline">Ganti Tanda Tangan</button>
                             </div>
                             @endif
@@ -48,7 +48,7 @@
                             <h4 class="font-bold text-gray-700 mb-2">Tanda Tangan Orang Tua</h4>
                             @if($journal->parent_signature)
                             <div x-show="!showPad" class="mb-3">
-                                <img src="{{ asset('storage/' . $journal->parent_signature) }}" alt="Ttd Ortu" class="h-20 object-contain bg-white border p-1 rounded mb-2">
+                                <img src="{{ asset('storage/' . $journal->parent_signature) }}" alt="Ttd Ortu" class="h-20 object-contain bg-white border p-1 rounded mb-2" loading="lazy" decoding="async">
                                 <button type="button" @click="showPad = true" class="text-xs text-blue-600 hover:underline">Ganti Tanda Tangan</button>
                             </div>
                             @endif

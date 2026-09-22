@@ -12,10 +12,14 @@
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
+        <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
         
-        <!-- FontAwesome -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <!-- FontAwesome (Non-blocking) -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+        <noscript>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        </noscript>
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -44,7 +48,7 @@
                     'w-64': !sidebarMinimized,
                     'w-20': sidebarMinimized
                 }" 
-                class="fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-200 transition-all duration-300 ease-in-out lg:translate-x-0 lg:static flex flex-col shadow-sm">
+                class="fixed inset-y-0 left-0 z-40 lg:z-10 bg-white border-r border-slate-200 transition-all duration-300 ease-in-out lg:translate-x-0 lg:static flex flex-col shadow-sm">
                 
                 <!-- Brand Header -->
                 <div class="flex items-center justify-between h-16 px-4 border-b border-slate-200 shrink-0">
@@ -80,6 +84,13 @@
                             <a href="{{ route('admin.students.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.students.*') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600' }}" :title="sidebarMinimized ? 'Manajemen Siswa' : ''">
                                 <i class="fa-solid fa-users w-5 text-center {{ request()->routeIs('admin.students.*') ? 'text-indigo-700' : 'text-slate-400' }}"></i>
                                 <span x-show="!sidebarMinimized" class="truncate">Manajemen Siswa</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('admin.validations.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.validations.*') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600' }}" :title="sidebarMinimized ? 'Validasi Bukti Siswa' : ''">
+                                <i class="fa-solid fa-camera-retro w-5 text-center {{ request()->routeIs('admin.validations.*') ? 'text-indigo-700' : 'text-slate-400' }}"></i>
+                                <span x-show="!sidebarMinimized" class="truncate">Validasi Bukti Siswa</span>
                             </a>
                         </li>
                         
@@ -134,7 +145,7 @@
             <div class="flex-1 flex flex-col min-w-0 bg-slate-50 overflow-hidden">
                 
                 <!-- Navbar / Header -->
-                <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 shrink-0 z-30">
+                <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 shrink-0 z-10">
                     <div class="flex items-center gap-4">
                         <!-- Mobile Menu Toggle -->
                         <button @click="sidebarOpen = true" class="lg:hidden text-slate-500 hover:text-slate-700 focus:outline-none">
@@ -170,7 +181,7 @@
                 </header>
                 
                 <!-- Main Content Area -->
-                <main class="flex-1 overflow-y-auto px-4 sm:px-6 py-6 lg:py-8 z-20">
+                <main class="flex-1 overflow-y-auto px-4 sm:px-6 py-6 lg:py-8">
                     <div class="sm:hidden mb-6">
                         @if (isset($header))
                             {{ $header }}
