@@ -7,8 +7,12 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 
-                @if(session('success')) <div class="mb-4 text-sm text-green-600 bg-green-50 p-3 rounded font-medium">{{ session('success') }}</div> @endif
-                @if($errors->any()) <div class="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded font-medium">{{ $errors->first() }}</div> @endif
+                @if(session('success')) 
+                    <x-alert type="success" :message="session('success')" class="mb-4" /> 
+                @endif
+                @if($errors->any()) 
+                    <x-alert type="error" :message="$errors->first()" class="mb-4" /> 
+                @endif
 
                 <!-- Search & Filters -->
                 <div class="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">

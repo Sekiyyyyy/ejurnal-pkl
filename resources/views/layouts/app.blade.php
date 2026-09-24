@@ -63,6 +63,9 @@
                 {{ $slot }}
             </main>
 
+            <!-- Global Modern Toast Alert -->
+            <x-toast-alert />
+
         </div>
     </body>
 </html>

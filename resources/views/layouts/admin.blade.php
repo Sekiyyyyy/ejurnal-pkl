@@ -211,5 +211,7 @@
                 }
             }
         </script>
+        <!-- Global Modern Toast Alert -->
+        <x-toast-alert />
     </body>
 </html>

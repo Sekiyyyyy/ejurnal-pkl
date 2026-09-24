@@ -145,6 +145,7 @@
             <span class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 font-medium text-sm text-white">
                 Pusat Bantuan
             </span>
-        </a>
+        <!-- Global Modern Toast Alert -->
+        <x-toast-alert />
     </body>
 </html>

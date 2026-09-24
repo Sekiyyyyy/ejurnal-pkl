@@ -1,0 +1,377 @@
+"use client";
+
+import { AnimatePresence, motion, type Variants } from "motion/react";
+import {
+  type FocusEvent,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
+
+import { cn } from "@/lib/utils";
+
+export type AlertPosition =
+  | "top-left"
+  | "top-center"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-center"
+  | "bottom-right";
+
+export type AlertVariant = "inline" | "toast";
+
+export interface AlertProps {
+  icon?: ReactNode;
+  title: ReactNode;
+  message: ReactNode;
+  action?: ReactNode;
+  dismissible?: boolean;
+  variant?: AlertVariant;
+  position?: AlertPosition;
+  timeout?: number;
+  onDismiss?: () => void;
+}
+
+const DEFAULT_TOAST_POSITION: AlertPosition = "top-right";
+
+const positionClasses: Record<AlertPosition, string> = {
+  "top-left": "fixed top-4 inset-x-4 sm:inset-x-auto sm:left-4 sm:right-auto",
+  "top-center":
+    "fixed top-4 inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2",
+  "top-right": "fixed top-4 inset-x-4 sm:inset-x-auto sm:left-auto sm:right-4",
+  "bottom-left":
+    "fixed top-4 inset-x-4 sm:inset-x-auto sm:top-auto sm:bottom-4 sm:left-4 sm:right-auto",
+  "bottom-center":
+    "fixed top-4 inset-x-4 sm:inset-x-auto sm:top-auto sm:bottom-4 sm:left-1/2 sm:-translate-x-1/2",
+  "bottom-right":
+    "fixed top-4 inset-x-4 sm:inset-x-auto sm:top-auto sm:bottom-4 sm:left-auto sm:right-4",
+};
+
+const entryY: Record<AlertPosition, number> = {
+  "top-left": -10,
+  "top-center": -10,
+  "top-right": -10,
+  "bottom-left": 10,
+  "bottom-center": 10,
+  "bottom-right": 10,
+};
+
+const EASE_OUT: [number, number, number, number] = [0.25, 0.46, 0.45, 0.94];
+const EASE_IN: [number, number, number, number] = [0.4, 0, 1, 1];
+
+const childVariants: Variants = {
+  hidden: { opacity: 0, y: 4, filter: "blur(3px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.28, ease: EASE_OUT },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.12, ease: "easeIn" },
+  },
+};
+
+const iconVariants: Variants = {
+  hidden: { scale: 0.5, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: {
+      type: "spring" as const,
+      stiffness: 340,
+      damping: 22,
+      delay: 0.06,
+    },
+  },
+  exit: {
+    scale: 0.6,
+    opacity: 0,
+    transition: { duration: 0.12, ease: "easeIn" },
+  },
+};
+
+export const Alert = ({
+  icon,
+  title,
+  message,
+  action,
+  dismissible = true,
+  variant,
+  position,
+  timeout = 10_000,
+  onDismiss,
+}: AlertProps) => {
+  const [visible, setVisible] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFocusWithin, setIsFocusWithin] = useState(false);
+  const [isDocumentHidden, setIsDocumentHidden] = useState(false);
+
+  const titleId = useId();
+  const messageId = useId();
+  const timeoutIdRef = useRef<number | null>(null);
+  const remainingTimeRef = useRef(timeout);
+  const timerStartedAtRef = useRef<number | null>(null);
+  const dismissalRequestedRef = useRef(false);
+  const previousTimeoutRef = useRef(timeout);
+
+  const resolvedVariant: AlertVariant = position
+    ? "toast"
+    : (variant ?? "inline");
+  const resolvedPosition =
+    resolvedVariant === "toast"
+      ? (position ?? DEFAULT_TOAST_POSITION)
+      : undefined;
+
+  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsDocumentHidden(document.hidden);
+    };
+
+    handleVisibilityChange();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  const clearTimer = useCallback(() => {
+    if (timeoutIdRef.current !== null) {
+      window.clearTimeout(timeoutIdRef.current);
+      timeoutIdRef.current = null;
+    }
+
+    timerStartedAtRef.current = null;
+  }, []);
+
+  const requestDismiss = useCallback(() => {
+    if (dismissalRequestedRef.current) {
+      return;
+    }
+
+    dismissalRequestedRef.current = true;
+    clearTimer();
+    setVisible(false);
+  }, [clearTimer]);
+
+  const pauseTimer = useCallback(() => {
+    if (timeoutIdRef.current === null || timerStartedAtRef.current === null) {
+      return;
+    }
+
+    const elapsed = Date.now() - timerStartedAtRef.current;
+    remainingTimeRef.current = Math.max(0, remainingTimeRef.current - elapsed);
+    clearTimer();
+  }, [clearTimer]);
+
+  const startTimer = useCallback(() => {
+    if (timeoutIdRef.current !== null || remainingTimeRef.current <= 0) {
+      return;
+    }
+
+    timerStartedAtRef.current = Date.now();
+    timeoutIdRef.current = window.setTimeout(() => {
+      clearTimer();
+      requestDismiss();
+    }, remainingTimeRef.current);
+  }, [clearTimer, requestDismiss]);
+
+  useEffect(() => {
+    if (previousTimeoutRef.current === timeout) {
+      return;
+    }
+
+    previousTimeoutRef.current = timeout;
+    clearTimer();
+    remainingTimeRef.current = timeout;
+
+    if (
+      visible &&
+      timeout > 0 &&
+      !(isHovered || isFocusWithin || isDocumentHidden)
+    ) {
+      startTimer();
+    }
+  }, [
+    clearTimer,
+    isDocumentHidden,
+    isFocusWithin,
+    isHovered,
+    startTimer,
+    timeout,
+    visible,
+  ]);
+
+  useEffect(() => {
+    if (!visible || timeout <= 0) {
+      clearTimer();
+      return;
+    }
+
+    if (isHovered || isFocusWithin || isDocumentHidden) {
+      pauseTimer();
+      return;
+    }
+
+    startTimer();
+  }, [
+    clearTimer,
+    isDocumentHidden,
+    isFocusWithin,
+    isHovered,
+    pauseTimer,
+    startTimer,
+    timeout,
+    visible,
+  ]);
+
+  useEffect(() => clearTimer, [clearTimer]);
+
+  const handleBlurCapture = (event: FocusEvent<HTMLDivElement>) => {
+    const nextFocusedNode = event.relatedTarget;
+
+    if (
+      nextFocusedNode instanceof Node &&
+      event.currentTarget.contains(nextFocusedNode)
+    ) {
+      return;
+    }
+
+    setIsFocusWithin(false);
+  };
+
+  const handleExitComplete = useCallback(() => {
+    if (!dismissalRequestedRef.current) {
+      return;
+    }
+
+    onDismiss?.();
+  }, [onDismiss]);
+
+  const dy = resolvedPosition ? entryY[resolvedPosition] : -8;
+
+  const containerVariants: Variants = {
+    hidden: { opacity: 0, y: dy, scale: 0.97, filter: "blur(6px)" },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      filter: "blur(0px)",
+      transition: {
+        opacity: { duration: 0.22, ease: "easeOut" },
+        y: { type: "spring" as const, stiffness: 320, damping: 26 },
+        scale: { type: "spring" as const, stiffness: 320, damping: 26 },
+        filter: { duration: 0.3, ease: "easeOut" },
+        staggerChildren: 0.05,
+        delayChildren: 0.08,
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: dy,
+      scale: 0.97,
+      filter: "blur(4px)",
+      transition: { duration: 0.18, ease: EASE_IN },
+    },
+  };
+
+  const card = (
+    <AnimatePresence onExitComplete={handleExitComplete}>
+      {visible && (
+        <motion.div
+          animate="visible"
+          aria-atomic={true}
+          aria-describedby={messageId}
+          aria-labelledby={titleId}
+          aria-live="polite"
+          className={cn(
+            "relative flex items-start gap-3 overflow-hidden rounded-lg border border-foreground/8 bg-card px-3.5 shadow-[0_2px_14px_0_rgba(0,0,0,0.07)]",
+            resolvedVariant === "toast"
+              ? "py-3 sm:max-w-sm sm:py-2.5"
+              : "w-full max-w-sm py-3",
+            resolvedPosition ? positionClasses[resolvedPosition] : undefined,
+            resolvedPosition && "z-300"
+          )}
+          exit="exit"
+          initial="hidden"
+          onBlurCapture={handleBlurCapture}
+          onFocusCapture={() => setIsFocusWithin(true)}
+          onPointerEnter={() => setIsHovered(true)}
+          onPointerLeave={() => setIsHovered(false)}
+          role="status"
+          variants={containerVariants}
+        >
+          {icon ? (
+            <motion.div
+              className="mt-0.5 shrink-0 text-black dark:text-white [&_svg]:h-[18px] [&_svg]:w-[18px]"
+              variants={iconVariants}
+            >
+              {icon}
+            </motion.div>
+          ) : null}
+
+          <div className="min-w-0 flex-1">
+            <motion.div
+              className="font-medium text-foreground text-sm leading-5 tracking-[-0.01em]"
+              id={titleId}
+              variants={childVariants}
+            >
+              {title}
+            </motion.div>
+            <motion.div
+              className="mt-1 text-[13px] text-foreground/65 leading-5"
+              id={messageId}
+              variants={childVariants}
+            >
+              {message}
+            </motion.div>
+            {action ? (
+              <motion.div
+                className="mt-2 flex flex-wrap items-center gap-2"
+                variants={childVariants}
+              >
+                {action}
+              </motion.div>
+            ) : null}
+          </div>
+
+          {dismissible && (
+            <motion.button
+              aria-label="Dismiss alert"
+              className="relative -my-2 -mr-2 inline-flex size-10 shrink-0 items-center justify-center self-start rounded-md text-foreground/35 transition-colors hover:bg-foreground/5 hover:text-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              onClick={requestDismiss}
+              type="button"
+              variants={childVariants}
+            >
+              <svg fill="none" height="14" viewBox="0 0 14 14" width="14">
+                <path
+                  d="M3.5 3.5L10.5 10.5M10.5 3.5L3.5 10.5"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeWidth="1.2"
+                />
+              </svg>
+            </motion.button>
+          )}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
+  if (resolvedVariant === "toast") {
+    return mounted ? createPortal(card, document.body) : null;
+  }
+
+  return card;
+};
+
+export default Alert;

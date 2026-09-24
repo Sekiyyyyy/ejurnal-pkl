@@ -9,9 +9,7 @@
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             
             @if(session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-                    {{ session('success') }}
-                </div>
+                <x-alert type="success" :message="session('success')" class="mb-6" />
             @endif
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">

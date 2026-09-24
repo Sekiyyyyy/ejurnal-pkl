@@ -13,10 +13,10 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 
                 @if(session('success'))
-                    <div class="bg-green-100 text-green-700 p-3 rounded mb-4 text-sm">{{ session('success') }}</div>
+                    <x-alert type="success" :message="session('success')" class="mb-4" />
                 @endif
                 @if($errors->any())
-                    <div class="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">{{ $errors->first() }}</div>
+                    <x-alert type="error" :message="$errors->first()" class="mb-4" />
                 @endif
 
                 <form id="signature-form" action="{{ route('journal.update-signatures', $journal->id) }}" method="POST">
