@@ -268,6 +268,10 @@ class JournalController extends Controller
         $signaturePath = $this->saveBase64Image($request->signature_base64, 'signatures');
         $photoPath = $this->saveBase64Image($request->live_photo_base64, 'live_photos');
 
+        if (!$signaturePath || !$photoPath) {
+            return back()->withInput()->withErrors(['live_photo_base64' => 'Tanda tangan atau foto live kamera tidak valid. Silakan coba lagi.']);
+        }
+
         $journal->update([
             'teacher_signature' => $signaturePath,
             'teacher_live_photo' => $photoPath,
@@ -365,6 +369,10 @@ class JournalController extends Controller
 
         $signaturePath = $this->saveBase64Image($request->signature_base64, 'signatures');
         $photoPath = $this->saveBase64Image($request->live_photo_base64, 'live_photos');
+
+        if (!$signaturePath || !$photoPath) {
+            return back()->withInput()->withErrors(['live_photo_base64' => 'Paraf atau foto live kamera tidak valid. Pastikan kamera telah aktif dan foto berhasil diambil.']);
+        }
 
         $existingWA = WeeklyApproval::where('journal_id', $journal->id)
             ->where('week_number', $request->week_number)

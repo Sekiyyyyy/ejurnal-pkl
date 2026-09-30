@@ -109,6 +109,11 @@ document.addEventListener("DOMContentLoaded", function() {
     startCamera();
 
     takeButton.addEventListener('click', () => {
+        if (!video.videoWidth || !video.videoHeight || video.videoWidth === 0) {
+            alert("Kamera belum siap atau tidak aktif. Pastikan izin akses kamera telah diizinkan dan preview video telah tampil.");
+            return;
+        }
+
         // Capture exactly what the camera outputs, maintaining its native aspect ratio
         const rawWidth = video.videoWidth;
         const rawHeight = video.videoHeight;
@@ -138,6 +143,10 @@ document.addEventListener("DOMContentLoaded", function() {
         
         // Compress to 60% quality WebP or JPEG
         const compressedDataUrl = photoCanvas.toDataURL('image/jpeg', 0.6);
+        if (!compressedDataUrl || !compressedDataUrl.startsWith('data:image/') || !compressedDataUrl.includes(';base64,')) {
+            alert("Gagal memproses gambar kamera. Harap coba lagi.");
+            return;
+        }
         photoInput.value = compressedDataUrl;
         
         video.classList.add('hidden');
@@ -163,9 +172,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 alert("Harap isi {{ strtolower($signatureLabel) }}!");
                 return false;
             }
-            if (!photoInput.value) {
+            if (!photoInput.value || !photoInput.value.startsWith('data:image/') || !photoInput.value.includes(';base64,')) {
                 e.preventDefault();
-                alert("Harap ambil foto live!");
+                alert("Harap ambil foto live kamera!");
                 return false;
             }
             // Ensure values are set
